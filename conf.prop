@@ -1,0 +1,3 @@
+URL_DB=jdbc:postgresql://localhost:5432/kursovaya?currentSchema=taxes
+User=postgres
+Pwd=3014159

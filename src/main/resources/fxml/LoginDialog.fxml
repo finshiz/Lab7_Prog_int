@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="myapp.controllers.LoginDialogController"
+            prefWidth="300.0" prefHeight="150.0">
+
+    <children>
+        <!-- Контейнер-сетка для полей ввода -->
+        <GridPane AnchorPane.topAnchor="20.0"
+                  AnchorPane.leftAnchor="25.0"
+                  AnchorPane.rightAnchor="15.0"
+                  vgap="10.0">
+
+            <children>
+                <!-- Метка "Логин:" -->
+                <Label text="Логин:" GridPane.rowIndex="0" GridPane.columnIndex="0">
+                    <font>
+                        <Font name="System Bold" size="14.0"/>
+                    </font>
+                </Label>
+
+                <!-- Поле ввода логина -->
+                <TextField fx:id="edLogin" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                           prefWidth="150.0"/>
+
+                <!-- Метка "Пароль:" -->
+                <Label text="Пароль:" GridPane.rowIndex="1" GridPane.columnIndex="0">
+                    <font>
+                        <Font name="System Bold" size="14.0"/>
+                    </font>
+                </Label>
+
+                <!-- Поле ввода пароля (скрытый ввод) -->
+                <PasswordField fx:id="edPwd" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                               prefWidth="150.0"/>
+            </children>
+
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT"/>
+                <ColumnConstraints/>
+            </columnConstraints>
+        </GridPane>
+
+        <!-- Контейнер для кнопок -->
+        <HBox AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="20.0" spacing="10.0">
+            <children>
+                <Button text="Войти" onAction="#handleOk">
+                    <font>
+                        <Font name="System Bold" size="14.0"/>
+                    </font>
+                </Button>
+                <Button text="Отмена" onAction="#handleCancel">
+                    <font>
+                        <Font name="System Bold" size="14.0"/>
+                    </font>
+                </Button>
+            </children>
+        </HBox>
+    </children>
+</AnchorPane>

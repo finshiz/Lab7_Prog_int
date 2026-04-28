@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="myapp.controllers.ProductEdController"
+            prefWidth="450.0" prefHeight="200.0">
+
+    <children>
+        <GridPane AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" vgap="10.0" hgap="10.0">
+            <children>
+                <Label text="Код товара:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="productCodeField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Наименование:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="productNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Цена без НДС:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="priceField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Код группы:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="groupCodeField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            </children>
+        </GridPane>
+
+        <HBox AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="20.0" spacing="10.0">
+            <children>
+                <Button text="Сохранить" onAction="#handleOk" prefWidth="100.0"/>
+                <Button text="Отмена" onAction="#handleCancel" prefWidth="100.0"/>
+            </children>
+        </HBox>
+    </children>
+</AnchorPane>
