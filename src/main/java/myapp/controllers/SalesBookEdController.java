@@ -130,7 +130,7 @@ public class SalesBookEdController {
 
     @FXML private void handleOk() {
         if (btnOk.getText().equals("Сохранить")) {
-            // Сохранение главной таблицы
+            // Сохранение главной таблицы (шапки накладной)
             invoice.setSell_date(datePicker.getValue());
             if (buyerCombo.getValue() != null) {
                 invoice.setId_buyer(buyerCombo.getValue().getId_buyer());
@@ -139,16 +139,20 @@ public class SalesBookEdController {
             invoice.setPayment_cost(payField.getText().isEmpty() ? 0 : Double.parseDouble(payField.getText()));
             invoice.setSelling_price(totalField.getText().isEmpty() ? 0 : Double.parseDouble(totalField.getText()));
 
+            boolean saved = false;
             if (isNew) {
-                if (manager.addInvoice(invoice)) {
+                saved = manager.addInvoice(invoice);
+                if (saved) {
                     isNew = false;
                     oldKey = invoice.getId_invoice();
-                    setEditMode(false); // Переходим в режим редактирования товаров
                 }
             } else {
-                if (manager.updateInvoice(invoice, oldKey)) {
-                    setEditMode(false);
-                }
+                saved = manager.updateInvoice(invoice, oldKey);
+            }
+            
+            if (saved) {
+                // После сохранения шапки переходим в режим редактирования товаров
+                setEditMode(false);
             }
         } else {
             // Кнопка "Редактировать накладную" - возвращаемся в режим редактирования шапки
@@ -158,9 +162,12 @@ public class SalesBookEdController {
 
     @FXML private void handleCancel() {
         if (btnCancel.getText().equals("Выход")) {
+            // Выход из режима редактирования товаров - сохраняем всё и закрываем
+            // Все изменения уже сохранены в БД через addSoldItem/updateSoldItem/deleteSoldItem
             dialogStage.close();
         } else {
-            setEditMode(false); // Кнопка "Отмена" при редактировании шапки просто переключает режим
+            // Кнопка "Отмена" при редактировании шапки - просто переключаем режим назад к товарам
+            setEditMode(false);
         }
     }
 
@@ -169,9 +176,8 @@ public class SalesBookEdController {
         SoldItem newItem = new SoldItem();
         newItem.setId_invoice(invoice.getId_invoice()); // Привязываем к текущей накладной
         if (showDetailDialog(newItem)) {
-            detailData.add(newItem);
-            // Обновляем сумму накладной (если триггер не делает это мгновенно, нужно перечитать)
-            // Для простоты перечитаем товары и обновим поле суммы
+            // Перезагружаем весь список товаров из БД после добавления
+            detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
             updateTotalPrice();
         }
     }
@@ -180,7 +186,8 @@ public class SalesBookEdController {
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
         if (sel != null) {
             if (showDetailDialog(sel)) {
-                detailTable.refresh();
+                // Перезагружаем весь список товаров из БД после редактирования
+                detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
                 updateTotalPrice();
             }
         }
@@ -191,7 +198,8 @@ public class SalesBookEdController {
         if (idx >= 0 && myapp.gui.Dialogs.showConfirmDialog("Удалить товар?", dialogStage)) {
             SoldItem item = detailData.get(idx);
             if (manager.deleteSoldItem(item.getId_product())) {
-                detailData.remove(idx);
+                // Перезагружаем весь список товаров из БД после удаления
+                detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
                 updateTotalPrice();
             }
         }
