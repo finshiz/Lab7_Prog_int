@@ -76,14 +76,19 @@ public class DBManager {
         String stm = "INSERT INTO taxes.buyers (id_buyer, organization_name) VALUES (?, ?)";
 
         try {
+            System.out.println(">>> [DB] Добавление покупателя: id=" + buyer.getId_buyer() + ", name=" + buyer.getOrganization_name());
             pst = con.prepareStatement(stm);
             pst.setInt(1, buyer.getId_buyer());
             pst.setString(2, buyer.getOrganization_name());
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+            System.out.println(">>> [DB] INSERT выполнен, строк затронуто: " + rows);
             con.commit();
+            System.out.println(">>> [DB] COMMIT выполнен для покупателя");
             return true;
         } catch (SQLException ex) {
             RollBack();
+            System.err.println(">>> [DB] ОШИБКА добавления покупателя: " + ex.getMessage());
+            ex.printStackTrace();
             myapp.gui.Dialogs.showDialog("Oshibka dobavleniya dannih",
                     ex.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR);
@@ -100,14 +105,19 @@ public class DBManager {
         String stm = "UPDATE taxes.buyers SET organization_name = ? WHERE id_buyer = ?";
 
         try {
+            System.out.println(">>> [DB] Обновление покупателя: oldKey=" + key + ", newId=" + buyer.getId_buyer());
             pst = con.prepareStatement(stm);
             pst.setString(1, buyer.getOrganization_name());
             pst.setInt(2, key);
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+            System.out.println(">>> [DB] UPDATE выполнен, строк затронуто: " + rows);
             con.commit();
+            System.out.println(">>> [DB] COMMIT выполнен для обновления покупателя");
             return true;
         } catch (SQLException ex) {
             RollBack();
+            System.err.println(">>> [DB] ОШИБКА обновления покупателя: " + ex.getMessage());
+            ex.printStackTrace();
             myapp.gui.Dialogs.showDialog("Oshibka izmeneniya dannih",
                     ex.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR);
@@ -124,15 +134,20 @@ public class DBManager {
         String stm = "DELETE FROM taxes.buyers WHERE id_buyer = ?";
 
         try {
+            System.out.println(">>> [DB] Удаление покупателя: id=" + kod);
             pst = con.prepareStatement(stm);
             pst.setInt(1, kod);
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+            System.out.println(">>> [DB] DELETE выполнен, строк затронуто: " + rows);
             con.commit();
+            System.out.println(">>> [DB] COMMIT выполнен для удаления покупателя");
             return true;
         } catch (SQLException ex) {
             myapp.gui.Dialogs.showDialog("Oshibka udaleniya dannih",
                     ex.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR);
+            System.err.println(">>> [DB] ОШИБКА удаления покупателя: " + ex.getMessage());
+            ex.printStackTrace();
             RollBack();
             return false;
         } finally {
@@ -212,15 +227,20 @@ public class DBManager {
         Connection con = this.getConnection();
         String stm = "INSERT INTO taxes.product_group (group_code, group_name, NDS_percent) VALUES (?, ?, ?)";
         try {
+            System.out.println(">>> [DB] Добавление группы: code=" + group.getGroup_code() + ", name=" + group.getGroup_name());
             pst = con.prepareStatement(stm);
             pst.setInt(1, group.getGroup_code());
             pst.setString(2, group.getGroup_name());
             pst.setDouble(3, group.getNDS_percent());
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+            System.out.println(">>> [DB] INSERT выполнен, строк затронуто: " + rows);
             con.commit();
+            System.out.println(">>> [DB] COMMIT выполнен для группы");
             return true;
         } catch (SQLException ex) {
             RollBack();
+            System.err.println(">>> [DB] ОШИБКА добавления группы: " + ex.getMessage());
+            ex.printStackTrace();
             myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         } finally {
@@ -233,16 +253,21 @@ public class DBManager {
         Connection con = this.getConnection();
         String stm = "UPDATE taxes.product_group SET group_code=?, group_name=?, NDS_percent=? WHERE group_code=?";
         try {
+            System.out.println(">>> [DB] Обновление группы: oldKey=" + key + ", newCode=" + group.getGroup_code());
             pst = con.prepareStatement(stm);
             pst.setInt(1, group.getGroup_code());
             pst.setString(2, group.getGroup_name());
             pst.setDouble(3, group.getNDS_percent());
             pst.setInt(4, key);
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+            System.out.println(">>> [DB] UPDATE выполнен, строк затронуто: " + rows);
             con.commit();
+            System.out.println(">>> [DB] COMMIT выполнен для обновления группы");
             return true;
         } catch (SQLException ex) {
             RollBack();
+            System.err.println(">>> [DB] ОШИБКА обновления группы: " + ex.getMessage());
+            ex.printStackTrace();
             myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         } finally {
@@ -255,13 +280,18 @@ public class DBManager {
         Connection con = this.getConnection();
         String stm = "DELETE FROM taxes.product_group WHERE group_code=?";
         try {
+            System.out.println(">>> [DB] Удаление группы: code=" + kod);
             pst = con.prepareStatement(stm);
             pst.setInt(1, kod);
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+            System.out.println(">>> [DB] DELETE выполнен, строк затронуто: " + rows);
             con.commit();
+            System.out.println(">>> [DB] COMMIT выполнен для удаления группы");
             return true;
         } catch (SQLException ex) {
             myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            System.err.println(">>> [DB] ОШИБКА удаления группы: " + ex.getMessage());
+            ex.printStackTrace();
             RollBack();
             return false;
         } finally {
@@ -275,16 +305,21 @@ public class DBManager {
         Connection con = this.getConnection();
         String stm = "INSERT INTO taxes.product (product_code, product_name, price_per_unit_without_NDS, group_code) VALUES (?, ?, ?, ?)";
         try {
+            System.out.println(">>> [DB] Добавление товара: code=" + prod.getProduct_code() + ", name=" + prod.getProduct_name());
             pst = con.prepareStatement(stm);
             pst.setInt(1, prod.getProduct_code());
             pst.setString(2, prod.getProduct_name());
             pst.setDouble(3, prod.getPrice_per_unit_without_NDS());
             pst.setInt(4, prod.getGroup_code());
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+            System.out.println(">>> [DB] INSERT выполнено, строк затронуто: " + rows);
             con.commit();
+            System.out.println(">>> [DB] COMMIT выполнен для товара");
             return true;
         } catch (SQLException ex) {
             RollBack();
+            System.err.println(">>> [DB] ОШИБКА добавления товара: " + ex.getMessage());
+            ex.printStackTrace();
             myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         } finally {
@@ -297,17 +332,22 @@ public class DBManager {
         Connection con = this.getConnection();
         String stm = "UPDATE taxes.product SET product_code=?, product_name=?, price_per_unit_without_NDS=?, group_code=? WHERE product_code=?";
         try {
+            System.out.println(">>> [DB] Обновление товара: oldKey=" + key + ", newCode=" + prod.getProduct_code());
             pst = con.prepareStatement(stm);
             pst.setInt(1, prod.getProduct_code());
             pst.setString(2, prod.getProduct_name());
             pst.setDouble(3, prod.getPrice_per_unit_without_NDS());
             pst.setInt(4, prod.getGroup_code());
             pst.setInt(5, key);
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+            System.out.println(">>> [DB] UPDATE выполнено, строк затронуто: " + rows);
             con.commit();
+            System.out.println(">>> [DB] COMMIT выполнен для обновления товара");
             return true;
         } catch (SQLException ex) {
             RollBack();
+            System.err.println(">>> [DB] ОШИБКА обновления товара: " + ex.getMessage());
+            ex.printStackTrace();
             myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         } finally {
@@ -320,13 +360,18 @@ public class DBManager {
         Connection con = this.getConnection();
         String stm = "DELETE FROM taxes.product WHERE product_code=?";
         try {
+            System.out.println(">>> [DB] Удаление товара: code=" + kod);
             pst = con.prepareStatement(stm);
             pst.setInt(1, kod);
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+            System.out.println(">>> [DB] DELETE выполнено, строк затронуто: " + rows);
             con.commit();
+            System.out.println(">>> [DB] COMMIT выполнен для удаления товара");
             return true;
         } catch (SQLException ex) {
             myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            System.err.println(">>> [DB] ОШИБКА удаления товара: " + ex.getMessage());
+            ex.printStackTrace();
             RollBack();
             return false;
         } finally {

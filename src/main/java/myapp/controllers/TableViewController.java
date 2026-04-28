@@ -123,15 +123,30 @@ public class TableViewController {
         try {
             if ("buyers".equals(tableName)) {
                 Buyer newBuyer = new Buyer(0, "");
-                if (showBuyerEditDialog(newBuyer)) tableView.getItems().add(newBuyer);
+                if (showBuyerEditDialog(newBuyer)) {
+                    System.out.println(">>> [UI] Покупатель добавлен в таблицу: " + newBuyer.getId_buyer());
+                    tableView.getItems().add(newBuyer);
+                    loadData(); // Перезагружаем данные из БД
+                }
             } else if ("product_group".equals(tableName)) {
                 ProductGroup newGroup = new ProductGroup(0, "", 0.0);
-                if (showGroupEditDialog(newGroup)) tableView.getItems().add(newGroup);
+                if (showGroupEditDialog(newGroup)) {
+                    System.out.println(">>> [UI] Группа добавлена в таблицу: " + newGroup.getGroup_code());
+                    tableView.getItems().add(newGroup);
+                    loadData(); // Перезагружаем данные из БД
+                }
             } else if ("product".equals(tableName)) {
                 Product newProd = new Product(0, "", 0.0, 0);
-                if (showProductEditDialog(newProd)) tableView.getItems().add(newProd);
+                if (showProductEditDialog(newProd)) {
+                    System.out.println(">>> [UI] Товар добавлен в таблицу: " + newProd.getProduct_code());
+                    tableView.getItems().add(newProd);
+                    loadData(); // Перезагружаем данные из БД
+                }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { 
+            System.err.println(">>> [UI] ОШИБКА при добавлении: " + e.getMessage());
+            e.printStackTrace(); 
+        }
     }
 
     // --- Кнопка ИЗМЕНИТЬ ---
@@ -139,17 +154,25 @@ public class TableViewController {
         try {
             Object selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
+                boolean updated = false;
                 if ("buyers".equals(tableName)) {
-                    if (showBuyerEditDialog((Buyer) selected)) tableView.refresh();
+                    updated = showBuyerEditDialog((Buyer) selected);
                 } else if ("product_group".equals(tableName)) {
-                    if (showGroupEditDialog((ProductGroup) selected)) tableView.refresh();
+                    updated = showGroupEditDialog((ProductGroup) selected);
                 } else if ("product".equals(tableName)) {
-                    if (showProductEditDialog((Product) selected)) tableView.refresh();
+                    updated = showProductEditDialog((Product) selected);
+                }
+                if (updated) {
+                    System.out.println(">>> [UI] Запись обновлена, перезагружаем таблицу");
+                    loadData(); // Перезагружаем данные из БД
                 }
             } else {
                 myapp.gui.Dialogs.showDialog("Предупреждение", "Выберите строку!", javafx.scene.control.Alert.AlertType.WARNING, dialogStage);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { 
+            System.err.println(">>> [UI] ОШИБКА при изменении: " + e.getMessage());
+            e.printStackTrace(); 
+        }
     }
 
     // --- Кнопка УДАЛИТЬ ---
@@ -169,7 +192,10 @@ public class TableViewController {
                 success = manager.deleteProduct(((Product) selected).getProduct_code());
             }
 
-            if (success) tableView.getItems().remove(selectedIndex);
+            if (success) {
+                System.out.println(">>> [UI] Запись удалена, перезагружаем таблицу");
+                loadData(); // Перезагружаем данные из БД
+            }
         } else {
             myapp.gui.Dialogs.showDialog("Предупреждение", "Выберите строку!", javafx.scene.control.Alert.AlertType.WARNING, dialogStage);
         }
