@@ -271,7 +271,7 @@ public class DBManager {
             pst.setInt(4, prod.getGroup_code());
             pst.executeUpdate(); con.commit(); return true;
         } catch (SQLException ex) { RollBack(); myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR); return false; }
-        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){return false;} }
+        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){e.printStackTrace();} }
     }
 
     public boolean updateProduct(Product prod, int key) {
@@ -287,7 +287,7 @@ public class DBManager {
             pst.setInt(5, key);
             pst.executeUpdate(); con.commit(); return true;
         } catch (SQLException ex) { RollBack(); myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR); return false; }
-        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){return false;} }
+        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){e.printStackTrace();} }
     }
 
     public boolean deleteProduct(int kod) {
@@ -297,7 +297,7 @@ public class DBManager {
         try {
             pst = con.prepareStatement(stm); pst.setInt(1, kod); pst.executeUpdate(); con.commit(); return true;
         } catch (SQLException ex) { myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR); RollBack(); return false; }
-        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){return false;} }
+        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){e.printStackTrace();} }
     }
     // ========== ГЛАВНАЯ ТАБЛИЦА: sales_book ==========
 
