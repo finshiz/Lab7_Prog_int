@@ -116,6 +116,13 @@ public class SalesBookEdController {
             btnEditDetail.setDisable(true);
             btnDeleteDetail.setDisable(true);
         } else {
+            // Проверка: если накладная новая и еще не сохранена, нельзя переходить к товарам
+            if (isNew && invoice.getId_invoice() == 0) {
+                myapp.gui.Dialogs.showDialog("Предупреждение", 
+                    "Сначала сохраните накладную (шапку), затем добавьте товары.", 
+                    javafx.scene.control.Alert.AlertType.WARNING, dialogStage);
+                return; // Не переключаем режим
+            }
             btnOk.setText("Редактировать накладную");
             btnCancel.setText("Выход");
             datePicker.setDisable(true);
@@ -145,6 +152,14 @@ public class SalesBookEdController {
                 if (saved) {
                     isNew = false;
                     oldKey = invoice.getId_invoice();
+                    System.out.println(">>> [SalesBookEd] Накладная создана, id_invoice = " + invoice.getId_invoice());
+                    // Обновляем id_invoice у всех товаров в памяти, если они были добавлены до сохранения
+                    for(SoldItem item : detailData) {
+                        if(item.getId_invoice() == 0) {
+                            item.setId_invoice(invoice.getId_invoice());
+                            System.out.println(">>> [SalesBookEd] Обновлен id_invoice у товара: " + item.getProduct_code());
+                        }
+                    }
                 }
             } else {
                 saved = manager.updateInvoice(invoice, oldKey);
