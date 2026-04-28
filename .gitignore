@@ -1,1 +1,28 @@
-Nothing should be ignored based on the provided file changes, as they only include Java source files (.java) which are core source code files that should not be ignored.
+```
+# Java/Maven build artifacts
+target/
+*.class
+*.jar
+
+# Dependencies
+lib/
+libs/
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+```

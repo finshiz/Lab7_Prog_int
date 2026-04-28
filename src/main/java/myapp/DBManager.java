@@ -418,9 +418,17 @@ public class DBManager {
 
             rs = pst.executeQuery();
             if (rs.next()) {
-                inv.setId_invoice(rs.getInt(1)); // Записываем сгенерированный ключ обратно в объект
+                int generatedId = rs.getInt(1);
+                inv.setId_invoice(generatedId);
+                System.out.println(">>> [DB] Sgenerirovan id_invoice: " + generatedId);
             }
+            
+            // Закрываем ResultSet перед коммитом
+            rs.close();
+            rs = null;
+            
             con.commit();
+            System.out.println(">>> [DB] COMMIT vipolnen dlya invoice");
             return true;
         } catch (Exception e) {
             RollBack();
@@ -535,20 +543,17 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
 
             rs = pst.executeQuery();
             if (rs.next()) {
-                item.setId_product(rs.getInt(1));
-                System.out.println(">>> [DB] Sgenerirovan id_product: " + item.getId_product());
+                int generatedId = rs.getInt(1);
+                item.setId_product(generatedId);
+                System.out.println(">>> [DB] Sgenerirovan id_product: " + generatedId);
             }
+            
+            // Закрываем ResultSet перед коммитом
+            rs.close();
+            rs = null;
             
             con.commit();
             System.out.println(">>> [DB] COMMIT vipolnen dlya sold item");
-
-            // Проверка
-            try (java.sql.Statement st = con.createStatement();
-                 java.sql.ResultSet rsCheck = st.executeQuery("SELECT COUNT(*) FROM taxes.sold_product WHERE id_invoice=" + item.getId_invoice())) {
-                if (rsCheck.next()) {
-                    System.out.println(">>> [DB] Proverka: v tablitse " + rsCheck.getInt(1) + " strok dlya invoice=" + item.getId_invoice());
-                }
-            }
 
             return true;
         } catch (Exception e) {
