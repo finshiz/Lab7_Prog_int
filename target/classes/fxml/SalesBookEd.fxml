@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<SplitPane dividerPositions="0.35" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="myapp.controllers.SalesBookEdController" prefWidth="800.0" prefHeight="500.0">
+    <items>
+        <!-- ВЕРХНЯЯ ЧАСТЬ: Данные накладной -->
+        <AnchorPane>
+            <children>
+                <Label text="Данные накладной" style="-fx-font-weight: bold; -fx-font-size: 14px;" AnchorPane.topAnchor="10.0" AnchorPane.leftAnchor="20.0"/>
+                <GridPane AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="20.0" vgap="15.0" hgap="10.0">
+                    <Label text="Дата:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <DatePicker fx:id="datePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="200.0"/>
+                    <Label text="Покупатель:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="buyerCombo" prefWidth="200.0" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <Label text="Сумма:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <TextField fx:id="totalField" editable="false" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <Label text="Оплата:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                    <TextField fx:id="payField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                </GridPane>
+                <HBox AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="20.0" spacing="10.0">
+                    <Button fx:id="btnOk" text="Сохранить" onAction="#handleOk" prefWidth="100.0"/>
+                    <Button fx:id="btnCancel" text="Отмена" onAction="#handleCancel" prefWidth="100.0"/>
+                </HBox>
+            </children>
+        </AnchorPane>
+
+        <!-- НИЖНЯЯ ЧАСТЬ: Товары -->
+        <AnchorPane>
+            <children>
+                <Label text="Ассортимент" style="-fx-font-weight: bold; -fx-font-size: 14px;" AnchorPane.topAnchor="10.0" AnchorPane.leftAnchor="10.0"/>
+                <TableView fx:id="detailTable" AnchorPane.topAnchor="40.0" AnchorPane.bottomAnchor="50.0"
+                           AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
+                    <columns>
+                        <TableColumn fx:id="colProdCode" prefWidth="80.0" text="Код товара"/>
+                        <TableColumn fx:id="colProdName" prefWidth="150.0" text="Наименование"/>
+                        <TableColumn fx:id="colCount" prefWidth="80.0" text="Кол-во"/>
+                        <TableColumn fx:id="colPrice" prefWidth="100.0" text="Цена"/>
+                        <TableColumn fx:id="colNds" prefWidth="80.0" text="НДС"/>
+                    </columns>
+                </TableView>
+                <HBox AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="10.0" spacing="10.0">
+                    <Button fx:id="btnNewDetail" text="Добавить" onAction="#handleNewDetail" disable="true"/>
+                    <Button fx:id="btnEditDetail" text="Изменить" onAction="#handleEditDetail" disable="true"/>
+                    <Button fx:id="btnDeleteDetail" text="Удалить" onAction="#handleDeleteDetail" disable="true"/>
+                </HBox>
+            </children>
+        </AnchorPane>
+    </items>
+</SplitPane>

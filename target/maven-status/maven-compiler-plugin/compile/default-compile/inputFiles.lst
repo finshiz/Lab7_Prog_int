@@ -1,0 +1,17 @@
+/workspace/src/main/java/myapp/DBManager.java
+/workspace/src/main/java/myapp/data/Product.java
+/workspace/src/main/java/myapp/data/SoldItem.java
+/workspace/src/main/java/myapp/data/SalesInvoice.java
+/workspace/src/main/java/myapp/MainApp.java
+/workspace/src/main/java/myapp/controllers/ProductEdController.java
+/workspace/src/main/java/myapp/gui/Dialogs.java
+/workspace/src/main/java/myapp/controllers/GroupEdController.java
+/workspace/src/main/java/myapp/controllers/BuyerEdController.java
+/workspace/src/main/java/myapp/data/ProductGroup.java
+/workspace/src/main/java/myapp/data/Buyer.java
+/workspace/src/main/java/myapp/controllers/SoldProductEdController.java
+/workspace/src/main/java/myapp/controllers/LoginDialogController.java
+/workspace/src/main/java/myapp/controllers/MainWindowController.java
+/workspace/src/main/java/myapp/controllers/SalesBookViewController.java
+/workspace/src/main/java/myapp/controllers/TableViewController.java
+/workspace/src/main/java/myapp/controllers/SalesBookEdController.java
