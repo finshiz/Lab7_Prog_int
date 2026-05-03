@@ -82,11 +82,13 @@ public class SoldProductEdController implements Initializable {
             ndsField.setText(String.format("%.2f", nds));
         } catch (Exception e) {}
     }
-    @FXML private void handleOk() {
+
+    @FXML
+    private void handleOk() {
         // 1. Проверка валидности
         if (productCombo.getValue() == null || countField.getText().isEmpty()) {
             myapp.gui.Dialogs.showDialog("Ошибка", "Выберите товар и укажите количество",
-                    Alert.AlertType.ERROR, dialogStage);
+                    javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
             return;
         }
 
@@ -107,7 +109,7 @@ public class SoldProductEdController implements Initializable {
             // 3. КРИТИЧЕСКАЯ ПРОВЕРКА ID НАКЛАДНОЙ
             if (item.getId_invoice() == 0) {
                 myapp.gui.Dialogs.showDialog("Ошибка", "ID накладной не установлен! " +
-                        "Невозможно добавить товар.", Alert.AlertType.ERROR, dialogStage);
+                        "Невозможно добавить товар.", javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
                 return;
             }
 
@@ -115,29 +117,29 @@ public class SoldProductEdController implements Initializable {
             if (isNew) {
                 if (manager.addSoldItem(item)) {
                     isOk = true;
+                    dialogStage.close();
                 }
             } else {
                 if (manager.updateSoldItem(item, oldKey)) {
                     isOk = true;
+                    dialogStage.close();
                 }
             }
 
         } catch (NumberFormatException e) {
-            myapp.gui.Dialogs.showDialog("Ошибка", "Неверный формат числа", Alert.AlertType.ERROR, dialogStage);
+            myapp.gui.Dialogs.showDialog("Ошибка", "Неверный формат числа", javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
         } catch (Exception e) {
-            myapp.gui.Dialogs.showDialog("Ошибка", "Неизвестная ошибка: " + e.getMessage(), Alert.AlertType.ERROR, dialogStage);
-        }
-
-        // 5. Закрытие окна при успехе
-        if (isOk) {
-            dialogStage.close();
+            myapp.gui.Dialogs.showDialog("Ошибка", "Неизвестная ошибка: " + e.getMessage(), javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
         }
     }
 
-    @FXML private void handleCancel() {
+    @FXML
+    private void handleCancel() {
         isOk = false;
         dialogStage.close();
     }
 
-    public boolean isOkClicked() { return isOk; }
+    public boolean isOkClicked() { 
+        return isOk; 
+    }
 }

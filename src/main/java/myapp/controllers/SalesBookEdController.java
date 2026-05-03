@@ -184,10 +184,11 @@ public class SalesBookEdController {
         }
     }
 
-    @FXML private void handleEditDetail() {
+    @FXML
+    private void handleEditDetail() {
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
         if (sel != null) {
-            // Создаем копию для редактирования
+            // Создаем копию для редактирования - ВАЖНО: id_invoice должен быть установлен!
             SoldItem itemToEdit = new SoldItem(
                 sel.getId_product(),
                 sel.getId_invoice(),
@@ -208,15 +209,18 @@ public class SalesBookEdController {
         }
     }
 
-    @FXML private void handleDeleteDetail() {
+    @FXML
+    private void handleDeleteDetail() {
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
-        if (sel != null && myapp.gui.Dialogs.showConfirmDialog("Удалить товар?", dialogStage)) {
-            if (manager.deleteSoldItem(sel.getId_product())) {
-                // Перезагружаем данные из БД после удаления
-                detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
-                updateTotalPrice();
+        if (sel != null) {
+            if (myapp.gui.Dialogs.showConfirmDialog("Удалить товар?", dialogStage)) {
+                if (manager.deleteSoldItem(sel.getId_product())) {
+                    // Перезагружаем данные из БД после удаления
+                    detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
+                    updateTotalPrice();
+                }
             }
-        } else if (sel == null) {
+        } else {
             myapp.gui.Dialogs.showDialog("Внимание", "Выберите товар для удаления",
                     javafx.scene.control.Alert.AlertType.WARNING, dialogStage);
         }
