@@ -23,7 +23,7 @@ public class SoldProductEdController implements Initializable {
     private DBManager manager;
     private SoldItem item;
     private boolean isOk = false, isNew = true;
-    private int oldKey;
+    private int oldProductKey; // Переименовано для ясности
 
     @Override public void initialize(URL url, ResourceBundle rb) {}
 
@@ -60,7 +60,7 @@ public class SoldProductEdController implements Initializable {
 
         if (item.getId_product() != 0) {
             isNew = false;
-            oldKey = item.getId_product();
+            oldProductKey = item.getId_product();
             codeField.setText(String.valueOf(item.getProduct_code()));
             countField.setText(String.valueOf(item.getSold_product_count()));
             priceField.setText(String.valueOf(item.getPrice_without_nds()));
@@ -108,7 +108,7 @@ public class SoldProductEdController implements Initializable {
                     isOk = true;
                 }
             } else {
-                if (manager.updateSoldItem(item, oldKey)) {
+                if (manager.updateSoldItem(item, oldProductKey)) {
                     isOk = true;
                 }
             }
