@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="myapp.controllers.MainWindowController"
+            prefWidth="500.0"
+            prefHeight="400.0">
+
+    <children>
+        <MenuBar AnchorPane.topAnchor="0.0"
+                 AnchorPane.leftAnchor="0.0"
+                 AnchorPane.rightAnchor="0.0">
+            <menus>
+                <Menu text="Файл">
+                    <items>
+                        <MenuItem text="Открыть" onAction="#handleOpen"/>
+                        <MenuItem text="Сохранить" onAction="#handleSave"/>
+                        <MenuItem text="Выход" onAction="#handleExit"/>
+                    </items>
+                </Menu>
+
+                <Menu text="Справочники">
+                    <items>
+                        <MenuItem text="Покупатели" onAction="#handleBuyers"/>
+                        <MenuItem text="Товары" onAction="#handleProducts"/>
+                        <MenuItem text="Группы товаров" onAction="#handleGroups"/>
+                    </items>
+                </Menu>
+
+                <Menu text="Операции">
+                    <items>
+                        <MenuItem text="Книга продаж" onAction="#handleSalesBook"/>
+                    </items>
+                </Menu>
+
+                <Menu text="Отчеты">
+                    <items>
+                        <MenuItem text="Книга продаж" onAction="#handleSalesReport"/>
+                        <MenuItem text="Книга оплат" onAction="#handlePaymentsReport"/>
+                        <MenuItem text="НДС" onAction="#handleNDSReport"/>
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+
+        <ImageView fx:id="imgView"
+                   AnchorPane.topAnchor="25.0"
+                   AnchorPane.leftAnchor="0.0"
+                   AnchorPane.rightAnchor="0.0"
+                   AnchorPane.bottomAnchor="0.0"
+                   preserveRatio="true"/>
+
+    </children>
+</AnchorPane>

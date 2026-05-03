@@ -170,7 +170,8 @@ public class SalesBookEdController {
         SoldItem newItem = new SoldItem();
         newItem.setId_invoice(invoice.getId_invoice());
         if (showDetailDialog(newItem, true)) {
-            detailData.add(newItem);
+            // Перезагружаем данные из БД, чтобы получить актуальные значения
+            detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
             updateTotalPrice();
         }
     }
@@ -178,9 +179,16 @@ public class SalesBookEdController {
     @FXML private void handleEditDetail() {
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
         if (sel != null) {
+            // Сохраняем ссылку на выбранный элемент для обновления после редактирования
+            int selectedIndex = detailTable.getSelectionModel().getSelectedIndex();
             if (showDetailDialog(sel, false)) {
-                detailTable.refresh();
+                // Перезагружаем данные из БД, чтобы получить актуальные значения
+                detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
                 updateTotalPrice();
+                // Восстанавливаем выделение
+                if (selectedIndex >= 0 && selectedIndex < detailData.size()) {
+                    detailTable.getSelectionModel().select(selectedIndex);
+                }
             }
         }
     }

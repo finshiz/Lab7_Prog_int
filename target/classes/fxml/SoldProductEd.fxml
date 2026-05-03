@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="myapp.controllers.SoldProductEdController" prefWidth="350.0" prefHeight="250.0">
+    <children>
+        <GridPane AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="20.0" vgap="12.0" hgap="10.0">
+            <Label text="Товар:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="productCombo" prefWidth="200.0" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <Label text="Код товара:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="codeField" editable="false" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <Label text="Количество:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="countField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <Label text="Цена без НДС:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <TextField fx:id="priceField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <Label text="Сумма НДС:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <TextField fx:id="ndsField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+        </GridPane>
+        <HBox AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="20.0" spacing="10.0">
+            <Button text="Сохранить" onAction="#handleOk" prefWidth="90.0"/>
+            <Button text="Отмена" onAction="#handleCancel" prefWidth="90.0"/>
+        </HBox>
+    </children>
+</AnchorPane>
