@@ -103,24 +103,22 @@ public class SoldProductEdController implements Initializable {
                 return;
             }
 
+            boolean success = false;
             if (isNew) {
-                if (manager.addSoldItem(item)) {
-                    isOk = true;
-                }
+                success = manager.addSoldItem(item);
             } else {
-                if (manager.updateSoldItem(item, oldProductKey)) {
-                    isOk = true;
-                }
+                success = manager.updateSoldItem(item, oldProductKey);
+            }
+            
+            if (success) {
+                isOk = true;
+                dialogStage.close();
             }
 
         } catch (NumberFormatException e) {
             myapp.gui.Dialogs.showDialog("Ошибка", "Неверный формат числа", Alert.AlertType.ERROR);
         } catch (Exception e) {
             myapp.gui.Dialogs.showDialog("Ошибка", "Неизвестная ошибка: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
-
-        if (isOk) {
-            dialogStage.close();
         }
     }
 

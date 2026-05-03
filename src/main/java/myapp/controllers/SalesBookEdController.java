@@ -163,25 +163,24 @@ public class SalesBookEdController {
 
     // --- ОПЕРАЦИИ С ПОДЧИНЕННОЙ ТАБЛИЦЕЙ ---
     @FXML private void handleNewDetail() {
+        if (invoice.getId_invoice() == 0) {
+            myapp.gui.Dialogs.showDialog("Ошибка", "Сначала сохраните накладную!", javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
+            return;
+        }
         SoldItem newItem = new SoldItem();
         newItem.setId_invoice(invoice.getId_invoice());
         if (showDetailDialog(newItem)) {
-            if (manager.addSoldItem(newItem)) {
-                detailData.add(newItem);
-                updateTotalPrice();
-            }
+            detailData.add(newItem);
+            updateTotalPrice();
         }
     }
 
     @FXML private void handleEditDetail() {
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
         if (sel != null) {
-            int oldProductKey = sel.getId_product(); // Сохраняем старый ключ перед диалогом
             if (showDetailDialog(sel)) {
-                if (manager.updateSoldItem(sel, oldProductKey)) {
-                    detailTable.refresh();
-                    updateTotalPrice();
-                }
+                detailTable.refresh();
+                updateTotalPrice();
             }
         }
     }
