@@ -130,8 +130,11 @@ public class SalesBookEdController {
         }
     }
 
-    @FXML private void handleOk() {
+    @FXML
+    private void handleOk() {
+        System.out.println("[LOG] handleOk called. Button text: " + btnOk.getText());
         if (btnOk.getText().equals("Сохранить")) {
+            System.out.println("[LOG] Saving invoice...");
             // Сохранение главной таблицы
             invoice.setSell_date(datePicker.getValue());
             if (buyerCombo.getValue() != null) {
@@ -142,20 +145,29 @@ public class SalesBookEdController {
             invoice.setSelling_price(totalField.getText().isEmpty() ? 0 : Double.parseDouble(totalField.getText()));
 
             if (isNew) {
+                System.out.println("[LOG] Calling addInvoice (NEW)...");
                 if (manager.addInvoice(invoice)) {
+                    System.out.println("[LOG] Invoice added. New ID: " + invoice.getId_invoice());
                     isNew = false;
                     oldKey = invoice.getId_invoice();
                     // После создания накладной загружаем пустой список товаров
                     detailData.clear();
                     setEditMode(false); // Переходим в режим редактирования товаров
+                } else {
+                    System.out.println("[LOG] addInvoice returned FALSE");
                 }
             } else {
+                System.out.println("[LOG] Calling updateInvoice with oldKey=" + oldKey);
                 if (manager.updateInvoice(invoice, oldKey)) {
+                    System.out.println("[LOG] Invoice updated");
                     setEditMode(false);
+                } else {
+                    System.out.println("[LOG] updateInvoice returned FALSE");
                 }
             }
         } else {
             // Кнопка "Редактировать накладную" - возвращаемся в режим редактирования шапки
+            System.out.println("[LOG] Switching to master edit mode");
             setEditMode(true);
         }
     }
@@ -170,24 +182,44 @@ public class SalesBookEdController {
 
     // --- ОПЕРАЦИИ С ПОДЧИНЕННОЙ ТАБЛИЦЕЙ ---
     @FXML private void handleNewDetail() {
-        if (invoice.getId_invoice() == 0) {
+        System.out.println("[LOG] handleNewDetail START");
+        System.out.println("[LOG] invoice object: " + invoice);
+        if (invoice != null) {
+            System.out.println("[LOG] invoice.id_invoice = " + invoice.getId_invoice());
+        } else {
+            System.out.println("[LOG] invoice is NULL!");
+        }
+        
+        if (invoice == null || invoice.getId_invoice() == 0) {
+            System.out.println("[LOG] BLOCKED: Invoice not saved yet");
             myapp.gui.Dialogs.showDialog("Ошибка", "Накладная еще не сохранена. Сначала сохраните накладную.",
                     javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
             return;
         }
+        
+        System.out.println("[LOG] Creating new SoldItem with id_invoice=" + invoice.getId_invoice());
         SoldItem newItem = new SoldItem();
-        newItem.setId_invoice(invoice.getId_invoice()); // Привязываем к текущей накладной
+        newItem.setId_invoice(invoice.getId_invoice());
+        
+        System.out.println("[LOG] Calling showDetailDialog...");
         if (showDetailDialog(newItem)) {
-            // Перезагружаем данные из БД после добавления
+            System.out.println("[LOG] Dialog returned TRUE, reloading data...");
             detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
             updateTotalPrice();
+            System.out.println("[LOG] Data reloaded. Detail table size: " + detailData.size());
+        } else {
+            System.out.println("[LOG] Dialog returned FALSE or cancelled");
         }
     }
 
     @FXML
     private void handleEditDetail() {
+        System.out.println("[LOG] handleEditDetail START");
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
+        System.out.println("[LOG] Selected item: " + sel);
+        
         if (sel != null) {
+            System.out.println("[LOG] Creating copy for edit. id_product=" + sel.getId_product() + ", id_invoice=" + sel.getId_invoice());
             // Создаем копию для редактирования - ВАЖНО: id_invoice должен быть установлен!
             SoldItem itemToEdit = new SoldItem(
                 sel.getId_product(),
@@ -198,12 +230,18 @@ public class SalesBookEdController {
                 sel.getPrice_without_nds(),
                 sel.getNds_summ()
             );
+            System.out.println("[LOG] Calling showDetailDialog for edit...");
             if (showDetailDialog(itemToEdit)) {
+                System.out.println("[LOG] Edit dialog returned TRUE, reloading data...");
                 // Перезагружаем данные из БД после редактирования
                 detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
                 updateTotalPrice();
+                System.out.println("[LOG] Data reloaded. Detail table size: " + detailData.size());
+            } else {
+                System.out.println("[LOG] Edit dialog returned FALSE or cancelled");
             }
         } else {
+            System.out.println("[LOG] No item selected");
             myapp.gui.Dialogs.showDialog("Внимание", "Выберите товар для редактирования",
                     javafx.scene.control.Alert.AlertType.WARNING, dialogStage);
         }
@@ -211,16 +249,28 @@ public class SalesBookEdController {
 
     @FXML
     private void handleDeleteDetail() {
+        System.out.println("[LOG] handleDeleteDetail START");
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
+        System.out.println("[LOG] Selected item for delete: " + (sel != null ? "id_product=" + sel.getId_product() : "NULL"));
+        
         if (sel != null) {
+            System.out.println("[LOG] Showing confirm dialog...");
             if (myapp.gui.Dialogs.showConfirmDialog("Удалить товар?", dialogStage)) {
+                System.out.println("[LOG] User confirmed. Calling deleteSoldItem for id_product=" + sel.getId_product());
                 if (manager.deleteSoldItem(sel.getId_product())) {
+                    System.out.println("[LOG] Delete successful, reloading data...");
                     // Перезагружаем данные из БД после удаления
                     detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
                     updateTotalPrice();
+                    System.out.println("[LOG] Data reloaded. Detail table size: " + detailData.size());
+                } else {
+                    System.out.println("[LOG] Delete returned FALSE");
                 }
+            } else {
+                System.out.println("[LOG] User cancelled delete");
             }
         } else {
+            System.out.println("[LOG] No item selected for delete");
             myapp.gui.Dialogs.showDialog("Внимание", "Выберите товар для удаления",
                     javafx.scene.control.Alert.AlertType.WARNING, dialogStage);
         }
@@ -241,6 +291,7 @@ public class SalesBookEdController {
     }
 
     private boolean showDetailDialog(SoldItem item) {
+        System.out.println("[LOG] showDetailDialog START. item.id_product=" + item.getId_product() + ", item.id_invoice=" + item.getId_invoice());
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SoldProductEd.fxml"));
             javafx.scene.layout.AnchorPane page = loader.load();
@@ -250,10 +301,16 @@ public class SalesBookEdController {
             editStage.initOwner(dialogStage);
             editStage.setScene(new Scene(page));
             SoldProductEdController ctrl = loader.getController();
+            System.out.println("[LOG] Initializing SoldProductEdController...");
             ctrl.initialize(editStage, manager, item);
+            System.out.println("[LOG] Showing dialog...");
             editStage.showAndWait();
-            return ctrl.isOkClicked();
+            boolean result = ctrl.isOkClicked();
+            System.out.println("[LOG] Dialog closed. isOkClicked=" + result);
+            return result;
         } catch (Exception e) {
+            System.out.println("[LOG] Exception in showDetailDialog: " + e.getMessage());
+            e.printStackTrace();
             myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось открыть диалог товара: " + e.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
             return false;

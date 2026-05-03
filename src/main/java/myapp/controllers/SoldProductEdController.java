@@ -85,8 +85,10 @@ public class SoldProductEdController implements Initializable {
 
     @FXML
     private void handleOk() {
+        System.out.println("[LOG-SOLD] handleOk START");
         // 1. Проверка валидности
         if (productCombo.getValue() == null || countField.getText().isEmpty()) {
+            System.out.println("[LOG-SOLD] Validation failed: no product or empty count");
             myapp.gui.Dialogs.showDialog("Ошибка", "Выберите товар и укажите количество",
                     javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
             return;
@@ -94,6 +96,7 @@ public class SoldProductEdController implements Initializable {
 
         try {
             Product p = productCombo.getValue();
+            System.out.println("[LOG-SOLD] Product selected: code=" + p.getProduct_code() + ", name=" + p.getProduct_name());
 
             // 2. Заполнение объекта данными из формы
             item.setProduct_code(p.getProduct_code());
@@ -105,9 +108,16 @@ public class SoldProductEdController implements Initializable {
 
             // Берем НДС из поля
             item.setNds_summ(Double.parseDouble(ndsField.getText()));
+            
+            System.out.println("[LOG-SOLD] Item data set: id_invoice=" + item.getId_invoice() + 
+                ", product_code=" + item.getProduct_code() + 
+                ", count=" + item.getSold_product_count() + 
+                ", price=" + item.getPrice_without_nds() + 
+                ", nds=" + item.getNds_summ());
 
             // 3. КРИТИЧЕСКАЯ ПРОВЕРКА ID НАКЛАДНОЙ
             if (item.getId_invoice() == 0) {
+                System.out.println("[LOG-SOLD] ERROR: ID накладной не установлен!");
                 myapp.gui.Dialogs.showDialog("Ошибка", "ID накладной не установлен! " +
                         "Невозможно добавить товар.", javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
                 return;
@@ -115,20 +125,31 @@ public class SoldProductEdController implements Initializable {
 
             // 4. Вызов менеджера
             if (isNew) {
+                System.out.println("[LOG-SOLD] Calling manager.addSoldItem (NEW)...");
                 if (manager.addSoldItem(item)) {
+                    System.out.println("[LOG-SOLD] addSoldItem returned TRUE. New id_product=" + item.getId_product());
                     isOk = true;
                     dialogStage.close();
+                } else {
+                    System.out.println("[LOG-SOLD] addSoldItem returned FALSE");
                 }
             } else {
+                System.out.println("[LOG-SOLD] Calling manager.updateSoldItem with oldKey=" + oldKey);
                 if (manager.updateSoldItem(item, oldKey)) {
+                    System.out.println("[LOG-SOLD] updateSoldItem returned TRUE");
                     isOk = true;
                     dialogStage.close();
+                } else {
+                    System.out.println("[LOG-SOLD] updateSoldItem returned FALSE");
                 }
             }
 
         } catch (NumberFormatException e) {
+            System.out.println("[LOG-SOLD] NumberFormatException: " + e.getMessage());
             myapp.gui.Dialogs.showDialog("Ошибка", "Неверный формат числа", javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
         } catch (Exception e) {
+            System.out.println("[LOG-SOLD] Exception: " + e.getMessage());
+            e.printStackTrace();
             myapp.gui.Dialogs.showDialog("Ошибка", "Неизвестная ошибка: " + e.getMessage(), javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
         }
     }
