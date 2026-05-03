@@ -83,7 +83,6 @@ public class SoldProductEdController implements Initializable {
         } catch (Exception e) {}
     }
     @FXML private void handleOk() {
-        // 1. Проверка валидности
         if (productCombo.getValue() == null || countField.getText().isEmpty()) {
             myapp.gui.Dialogs.showDialog("Ошибка", "Выберите товар и укажите количество",
                     Alert.AlertType.ERROR, dialogStage);
@@ -93,57 +92,33 @@ public class SoldProductEdController implements Initializable {
         try {
             Product p = productCombo.getValue();
 
-            // 2. Заполнение объекта данными из формы
             item.setProduct_code(p.getProduct_code());
-            item.setProduct_name(p.getProduct_name()); // Для отображения в таблице
+            item.setProduct_name(p.getProduct_name());
             item.setSold_product_count(Integer.parseInt(countField.getText()));
-
-            // Берем цену из выбранного товара (справочника)
             item.setPrice_without_nds(p.getPrice_per_unit_without_NDS());
-
-            // Берем НДС из поля
             item.setNds_summ(Double.parseDouble(ndsField.getText()));
 
-            // 3. КРИТИЧЕСКАЯ ПРОВЕРКА ID НАКЛАДНОЙ
-            System.out.println(">>> [SoldProductEd] SOHRANENIE TOWARA:");
-            System.out.println("    - Item ID_Product (skey): " + item.getId_product());
-            System.out.println("    - Item ID_Invoice (FK): " + item.getId_invoice());
-
             if (item.getId_invoice() == 0) {
-                myapp.gui.Dialogs.showDialog("Ошибка", "ID nakladnoy ne ustanovlen! " +
-                        "Nevозmozhno dobavit' tovar.", Alert.AlertType.ERROR, dialogStage);
-                System.out.println("    - ERROR: ID_Invoice = 0, aborting save.");
+                myapp.gui.Dialogs.showDialog("Ошибка", "ID накладной не установлен! Невозможно добавить товар.", Alert.AlertType.ERROR, dialogStage);
                 return;
             }
 
-            // 4. Вызов менеджера
             if (isNew) {
-                System.out.println("    - Vyzov manager.addSoldItem...");
                 if (manager.addSoldItem(item)) {
                     isOk = true;
-                    System.out.println("    - SUCCESS: Tovar dobavlen.");
-                } else {
-                    System.out.println("    - FAIL: manager.addSoldItem vernul false.");
                 }
             } else {
-                System.out.println("    - Vyzov manager.updateSoldItem...");
                 if (manager.updateSoldItem(item, oldKey)) {
                     isOk = true;
-                    System.out.println("    - SUCCESS: Tovar obnovlen.");
-                } else {
-                    System.out.println("    - FAIL: manager.updateSoldItem vernul false.");
                 }
             }
 
         } catch (NumberFormatException e) {
-            myapp.gui.Dialogs.showDialog("Ошибка", "Neverny format chisla", Alert.AlertType.ERROR);
-            System.err.println(">>> [SoldProductEd] NumberFormatException: " + e.getMessage());
+            myapp.gui.Dialogs.showDialog("Ошибка", "Неверный формат числа", Alert.AlertType.ERROR);
         } catch (Exception e) {
-            e.printStackTrace();
-            myapp.gui.Dialogs.showDialog("Ошибка", "Neizvestnaya oshibka: " + e.getMessage(), Alert.AlertType.ERROR);
+            myapp.gui.Dialogs.showDialog("Ошибка", "Неизвестная ошибка: " + e.getMessage(), Alert.AlertType.ERROR);
         }
 
-        // 5. Закрытие окна при успехе
         if (isOk) {
             dialogStage.close();
         }

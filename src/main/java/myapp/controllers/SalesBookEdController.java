@@ -103,15 +103,14 @@ public class SalesBookEdController {
         setEditMode(true);
     }
 
-    // Переключение режимов: true = редактируем накладную, false = редактируем товары
     private void setEditMode(boolean masterMode) {
         if (masterMode) {
             btnOk.setText("Сохранить");
             btnCancel.setText("Отмена");
             datePicker.setDisable(false);
             buyerCombo.setDisable(false);
-            payField.setDisable(false); // Поле оплаты можно менять
-            totalField.setDisable(true); // Сумма считается автоматически (или триггером)
+            payField.setDisable(false);
+            totalField.setDisable(true);
             btnNewDetail.setDisable(true);
             btnEditDetail.setDisable(true);
             btnDeleteDetail.setDisable(true);
@@ -130,7 +129,6 @@ public class SalesBookEdController {
 
     @FXML private void handleOk() {
         if (btnOk.getText().equals("Сохранить")) {
-            // Сохранение главной таблицы
             invoice.setSell_date(datePicker.getValue());
             if (buyerCombo.getValue() != null) {
                 invoice.setId_buyer(buyerCombo.getValue().getId_buyer());
@@ -143,7 +141,7 @@ public class SalesBookEdController {
                 if (manager.addInvoice(invoice)) {
                     isNew = false;
                     oldKey = invoice.getId_invoice();
-                    setEditMode(false); // Переходим в режим редактирования товаров
+                    setEditMode(false);
                 }
             } else {
                 if (manager.updateInvoice(invoice, oldKey)) {
@@ -151,7 +149,6 @@ public class SalesBookEdController {
                 }
             }
         } else {
-            // Кнопка "Редактировать накладную" - возвращаемся в режим редактирования шапки
             setEditMode(true);
         }
     }
@@ -160,18 +157,16 @@ public class SalesBookEdController {
         if (btnCancel.getText().equals("Выход")) {
             dialogStage.close();
         } else {
-            setEditMode(false); // Кнопка "Отмена" при редактировании шапки просто переключает режим
+            setEditMode(false);
         }
     }
 
     // --- ОПЕРАЦИИ С ПОДЧИНЕННОЙ ТАБЛИЦЕЙ ---
     @FXML private void handleNewDetail() {
         SoldItem newItem = new SoldItem();
-        newItem.setId_invoice(invoice.getId_invoice()); // Привязываем к текущей накладной
+        newItem.setId_invoice(invoice.getId_invoice());
         if (showDetailDialog(newItem)) {
             detailData.add(newItem);
-            // Обновляем сумму накладной (если триггер не делает это мгновенно, нужно перечитать)
-            // Для простоты перечитаем товары и обновим поле суммы
             updateTotalPrice();
         }
     }
@@ -198,16 +193,11 @@ public class SalesBookEdController {
     }
 
     private void updateTotalPrice() {
-        // Пересчитываем сумму или берем из БД (если триггер)
-        // В твоей схеме есть триггер trg_update_sellpr, он обновит sales_book.selling_price
-        // Но нам нужно обновить поле в UI. Перезагрузим данные накладной.
-        // Самый простой способ - взять сумму из loaded invoice
-        // Но так как мы не перезагружали invoice объект, посчитаем вручную для UI
         double total = 0;
         for(SoldItem item : detailData) {
             total += (item.getPrice_without_nds() * item.getSold_product_count()) + item.getNds_summ();
         }
-        invoice.setSelling_price(total); // Обновляем объект
+        invoice.setSelling_price(total);
         totalField.setText(String.format("%.2f", total));
     }
 
