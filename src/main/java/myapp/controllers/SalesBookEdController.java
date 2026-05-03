@@ -1,19 +1,26 @@
 package myapp.controllers;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import myapp.DBManager;
 import myapp.data.Buyer;
+import myapp.data.Product;
 import myapp.data.SalesInvoice;
 import myapp.data.SoldItem;
-import java.util.ArrayList;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SalesBookEdController {
 
@@ -24,52 +31,50 @@ public class SalesBookEdController {
     @FXML private Button btnOk, btnCancel;
 
     @FXML private TableView<SoldItem> detailTable;
-    @FXML private TableColumn<SoldItem, Integer> colProdCode;
+    @FXML private TableColumn<SoldItem, String> colProdCode;
     @FXML private TableColumn<SoldItem, String> colProdName;
     @FXML private TableColumn<SoldItem, Integer> colCount;
     @FXML private TableColumn<SoldItem, Double> colPrice;
     @FXML private TableColumn<SoldItem, Double> colNds;
+    @FXML private TableColumn<SoldItem, Double> colTotalPrice;
     @FXML private Button btnNewDetail, btnEditDetail, btnDeleteDetail;
 
     private Stage dialogStage;
     private DBManager manager;
     private SalesInvoice invoice;
-    private SalesBookViewController parentCtrl; // Ссылка на родителя для обновления
+    private SalesBookViewController parentCtrl;
 
     private ObservableList<SoldItem> detailData = FXCollections.observableArrayList();
     private boolean isNew = true;
     private int oldKey;
+    private boolean isOk = false;
+
+    private Map<Integer, Product> productsMap = new HashMap<>();
 
     public void initialize(Stage dialogStage, DBManager manager, SalesInvoice invoice, SalesBookViewController parentCtrl) {
         this.dialogStage = dialogStage;
         this.manager = manager;
         this.invoice = invoice;
         this.parentCtrl = parentCtrl;
+        this.isOk = false;
 
-        // Загрузка покупателей в ComboBox
-        ArrayList<Buyer> buyers = new ArrayList<>(manager.loadBuyersForCombo());
-        buyerCombo.setItems(FXCollections.observableArrayList(buyers));
+        // Загрузка покупателей
+        ObservableList<Buyer> buyers = FXCollections.observableArrayList(manager.loadBuyersForCombo());
+        buyerCombo.setItems(buyers);
+        setupComboBox(buyerCombo, Buyer::getOrganization_name);
 
-        buyerCombo.setCellFactory(lv -> new ListCell<Buyer>() {
-            @Override protected void updateItem(Buyer item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(item == null ? null : item.getOrganization_name());
-            }
-        });
+        // Загрузка товаров для маппинга
+        for (Product p : manager.getProducts()) {
+            productsMap.put(p.getProduct_code(), p);
+        }
 
-        buyerCombo.setButtonCell(new ListCell<Buyer>() {
-            @Override protected void updateItem(Buyer item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(item == null ? null : item.getOrganization_name());
-            }
-        });
-
-        // Инициализация полей главной таблицы
+        // Инициализация полей
         if (invoice.getId_invoice() == 0) {
             isNew = true;
             datePicker.setValue(java.time.LocalDate.now());
             totalField.setText("0.00");
             payField.setText("0.00");
+            detailData = FXCollections.observableArrayList();
         } else {
             isNew = false;
             oldKey = invoice.getId_invoice();
@@ -77,30 +82,78 @@ public class SalesBookEdController {
             totalField.setText(String.valueOf(invoice.getSelling_price()));
             payField.setText(String.valueOf(invoice.getPayment_cost()));
 
-            // Выбрать покупателя в комбобоксе
-            for(Buyer b : buyers) {
-                if(b.getId_buyer() == invoice.getId_buyer()) {
+            for (Buyer b : buyers) {
+                if (b.getId_buyer() == invoice.getId_buyer()) {
                     buyerCombo.setValue(b);
                     break;
                 }
             }
-        }
-
-        // Инициализация подчиненной таблицы
-        if (!isNew) {
-            detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
+            detailData = FXCollections.observableArrayList(manager.loadSoldItems(invoice.getId_invoice()));
         }
 
         detailTable.setItems(detailData);
-
-        colProdCode.setCellValueFactory(new PropertyValueFactory<>("product_code"));
-        colProdName.setCellValueFactory(new PropertyValueFactory<>("product_name"));
-        colCount.setCellValueFactory(new PropertyValueFactory<>("sold_product_count"));
-        colPrice.setCellValueFactory(new PropertyValueFactory<>("price_without_nds"));
-        colNds.setCellValueFactory(new PropertyValueFactory<>("nds_summ"));
-
-        // Режим редактирования главной таблицы (по умолчанию)
+        setupTableColumns();
         setEditMode(true);
+    }
+
+    private <T> void setupComboBox(ComboBox<T> combo, java.util.function.Function<T, String> textFunc) {
+        combo.setCellFactory(lv -> new ListCell<T>() {
+            @Override protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : textFunc.apply(item));
+            }
+        });
+        combo.setButtonCell(new ListCell<T>() {
+            @Override protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : textFunc.apply(item));
+            }
+        });
+    }
+
+    private void setupTableColumns() {
+        colProdCode.setCellValueFactory(c -> {
+            int kod = c.getValue().getProductCode();
+            return new SimpleStringProperty(String.valueOf(kod));
+        });
+
+        colProdName.setCellValueFactory(c -> {
+            int kod = c.getValue().getProductCode();
+            Product p = productsMap.get(kod);
+            String name = p != null ? p.getProductName() : "Код: " + kod;
+            return new SimpleStringProperty(name);
+        });
+
+        colCount.setCellValueFactory(c -> c.getValue().soldProductCountProperty().asObject());
+        colPrice.setCellValueFactory(c -> c.getValue().priceWithoutNdsProperty().asObject());
+        colNds.setCellValueFactory(c -> c.getValue().ndsSummProperty().asObject());
+
+        colTotalPrice.setCellValueFactory(c -> {
+            int count = c.getValue().getSoldProductCount();
+            double price = c.getValue().getPriceWithoutNds();
+            double nds = c.getValue().getNdsSumm();
+            double total = (price * count) + nds;
+            return new javafx.beans.property.SimpleObjectProperty<>(total);
+        });
+    }
+
+    private void recalculateTotal() {
+        if (detailData == null || detailData.isEmpty()) {
+            totalField.setText("0.00");
+            return;
+        }
+
+        double total = 0;
+        for (SoldItem s : detailData) {
+            double price = s.getPriceWithoutNds();
+            int count = s.getSoldProductCount();
+            double nds = s.getNdsSumm();
+            total += (price * count) + nds;
+        }
+
+        total = Math.round(total * 100.0) / 100.0;
+        totalField.setText(String.format("%.2f", total));
+        invoice.setSelling_price(total);
     }
 
     private void setEditMode(boolean masterMode) {
@@ -129,24 +182,29 @@ public class SalesBookEdController {
 
     @FXML private void handleOk() {
         if (btnOk.getText().equals("Сохранить")) {
+            if (!isInputValid()) return;
+
             invoice.setSell_date(datePicker.getValue());
             if (buyerCombo.getValue() != null) {
                 invoice.setId_buyer(buyerCombo.getValue().getId_buyer());
                 invoice.setBuyer_name(buyerCombo.getValue().getOrganization_name());
             }
             invoice.setPayment_cost(payField.getText().isEmpty() ? 0 : Double.parseDouble(payField.getText()));
-            invoice.setSelling_price(totalField.getText().isEmpty() ? 0 : Double.parseDouble(totalField.getText()));
 
-            if (isNew) {
-                if (manager.addInvoice(invoice)) {
-                    isNew = false;
-                    oldKey = invoice.getId_invoice();
-                    setEditMode(false);
+            boolean ok = isNew ? manager.addInvoice(invoice) : manager.updateInvoice(invoice, oldKey);
+            if (ok) {
+                isOk = true;
+                if (parentCtrl != null) {
+                    if (isNew) {
+                        parentCtrl.getInvoiceTable().getItems().add(invoice);
+                        isNew = false;
+                        oldKey = invoice.getId_invoice();
+                        dialogStage.setTitle("Редактирование накладной");
+                    } else {
+                        parentCtrl.getInvoiceTable().refresh();
+                    }
                 }
-            } else {
-                if (manager.updateInvoice(invoice, oldKey)) {
-                    setEditMode(false);
-                }
+                setEditMode(false);
             }
         } else {
             setEditMode(true);
@@ -161,72 +219,71 @@ public class SalesBookEdController {
         }
     }
 
-    // --- ОПЕРАЦИИ С ПОДЧИНЕННОЙ ТАБЛИЦЕЙ ---
-    @FXML private void handleNewDetail() {
-        if (invoice.getId_invoice() == 0) {
-            myapp.gui.Dialogs.showDialog("Ошибка", "Сначала сохраните накладную!", javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
-            return;
+    private boolean isInputValid() {
+        String errorMessage = "";
+        if (datePicker.getValue() == null)
+            errorMessage += "Не выбрана дата!\n";
+        if (buyerCombo.getValue() == null)
+            errorMessage += "Не выбран покупатель!\n";
+
+        if (errorMessage.isEmpty()) return true;
+        else {
+            myapp.gui.Dialogs.showDialog("Ошибка", errorMessage, AlertType.ERROR, dialogStage);
+            return false;
         }
+    }
+
+    public boolean isOkClicked() {
+        return isOk;
+    }
+
+    @FXML private void handleNewDetail() {
+        if (detailData == null) return;
         SoldItem newItem = new SoldItem();
-        newItem.setId_invoice(invoice.getId_invoice());
-        if (showDetailDialog(newItem, true)) {
-            // Перезагружаем данные из БД, чтобы получить актуальные значения
-            detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
-            updateTotalPrice();
+        newItem.setIdInvoice(invoice.getId_invoice());
+        if (showDetailDialog(newItem)) {
+            detailData.add(newItem);
+            recalculateTotal();
         }
     }
 
     @FXML private void handleEditDetail() {
-        SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
-        if (sel != null) {
-            // Сохраняем ссылку на выбранный элемент для обновления после редактирования
-            int selectedIndex = detailTable.getSelectionModel().getSelectedIndex();
-            if (showDetailDialog(sel, false)) {
-                // Перезагружаем данные из БД, чтобы получить актуальные значения
-                detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
-                updateTotalPrice();
-                // Восстанавливаем выделение
-                if (selectedIndex >= 0 && selectedIndex < detailData.size()) {
-                    detailTable.getSelectionModel().select(selectedIndex);
+        if (detailData == null) return;
+        SoldItem selected = detailTable.getSelectionModel().getSelectedItem();
+        if (selected != null && showDetailDialog(selected)) {
+            detailTable.refresh();
+            recalculateTotal();
+        }
+    }
+
+    @FXML private void handleDeleteDetail() {
+        if (detailData == null) return;
+        int idx = detailTable.getSelectionModel().getSelectedIndex();
+        if (idx >= 0) {
+            if (myapp.gui.Dialogs.showConfirmDialog("Удалить позицию?", dialogStage)) {
+                SoldItem s = detailTable.getSelectionModel().getSelectedItem();
+                if (manager.deleteSoldItem(s.getIdProduct())) {
+                    detailTable.getItems().remove(idx);
+                    recalculateTotal();
                 }
             }
         }
     }
 
-    @FXML private void handleDeleteDetail() {
-        int idx = detailTable.getSelectionModel().getSelectedIndex();
-        if (idx >= 0 && myapp.gui.Dialogs.showConfirmDialog("Удалить товар?", dialogStage)) {
-            SoldItem item = detailData.get(idx);
-            if (manager.deleteSoldItem(item.getId_product())) {
-                detailData.remove(idx);
-                updateTotalPrice();
-            }
-        }
-    }
-
-    private void updateTotalPrice() {
-        double total = 0;
-        for(SoldItem item : detailData) {
-            total += (item.getPrice_without_nds() * item.getSold_product_count()) + item.getNds_summ();
-        }
-        invoice.setSelling_price(total);
-        totalField.setText(String.format("%.2f", total));
-    }
-
-    private boolean showDetailDialog(SoldItem item, boolean isNew) {
+    private boolean showDetailDialog(SoldItem item) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SoldProductEd.fxml"));
             javafx.scene.layout.AnchorPane page = loader.load();
-            Stage editStage = new Stage();
-            editStage.setTitle(isNew ? "Добавление товара" : "Редактирование товара");
-            editStage.initModality(Modality.WINDOW_MODAL);
-            editStage.initOwner(dialogStage);
-            editStage.setScene(new Scene(page));
+            Stage stage = new Stage();
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(dialogStage);
+            stage.setTitle(item.getIdProduct() == 0 ? "Добавление товара" : "Редактирование товара");
+            stage.setScene(new Scene(page));
             SoldProductEdController ctrl = loader.getController();
-            ctrl.initialize(editStage, manager, item, isNew);
-            editStage.showAndWait();
+            ctrl.initialize(stage, manager, item, invoice.getId_invoice());
+            stage.showAndWait();
             return ctrl.isOkClicked();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }

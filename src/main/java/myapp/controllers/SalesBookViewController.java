@@ -47,6 +47,10 @@ public class SalesBookViewController {
         colPay.setCellValueFactory(new PropertyValueFactory<>("payment_cost"));
     }
 
+    public TableView<SalesInvoice> getInvoiceTable() {
+        return invoiceTable;
+    }
+
     private void refreshTable() {
         data.setAll(manager.loadInvoices());
         invoiceTable.setItems(data);

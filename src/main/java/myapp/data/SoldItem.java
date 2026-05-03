@@ -1,45 +1,57 @@
 package myapp.data;
 
+import javafx.beans.property.*;
+
 public class SoldItem {
-    private int id_product;       // Суррогатный ключ (SERIAL)
-    private int id_invoice;       // Внешний ключ на sales_book
-    private int product_code;     // Внешний ключ на product
-    private String product_name;  // Имя товара (для отображения)
-    private int sold_product_count; // Количество
-    private double price_without_nds; // Цена без НДС
-    private double nds_summ;      // Сумма НДС
+    private final IntegerProperty idProduct;
+    private final IntegerProperty idInvoice;
+    private final IntegerProperty productCode;
+    private final StringProperty productName;
+    private final IntegerProperty soldProductCount;
+    private final DoubleProperty priceWithoutNds;
+    private final DoubleProperty ndsSumm;
 
-    public SoldItem() {}
-
-    public SoldItem(int id_product, int id_invoice, int product_code, String product_name, int count, double price, double nds) {
-        this.id_product = id_product;
-        this.id_invoice = id_invoice;
-        this.product_code = product_code;
-        this.product_name = product_name;
-        this.sold_product_count = count;
-        this.price_without_nds = price;
-        this.nds_summ = nds;
+    public SoldItem() {
+        this(0, 0, 0, null, 0, 0.0, 0.0);
     }
 
-    // GETTERS & SETTERS
-    public int getId_product() { return id_product; }
-    public void setId_product(int id_product) { this.id_product = id_product; }
+    public SoldItem(int idProduct, int idInvoice, int productCode, String productName,
+                    int count, double price, double nds) {
+        this.idProduct = new SimpleIntegerProperty(idProduct);
+        this.idInvoice = new SimpleIntegerProperty(idInvoice);
+        this.productCode = new SimpleIntegerProperty(productCode);
+        this.productName = new SimpleStringProperty(productName);
+        this.soldProductCount = new SimpleIntegerProperty(count);
+        this.priceWithoutNds = new SimpleDoubleProperty(price);
+        this.ndsSumm = new SimpleDoubleProperty(nds);
+    }
 
-    public int getId_invoice() { return id_invoice; }
-    public void setId_invoice(int id_invoice) { this.id_invoice = id_invoice; }
+    // Геттеры и сеттеры
+    public int getIdProduct() { return idProduct.get(); }
+    public IntegerProperty idProductProperty() { return idProduct; }
+    public void setIdProduct(int idProduct) { this.idProduct.set(idProduct); }
 
-    public int getProduct_code() { return product_code; }
-    public void setProduct_code(int product_code) { this.product_code = product_code; }
+    public int getIdInvoice() { return idInvoice.get(); }
+    public IntegerProperty idInvoiceProperty() { return idInvoice; }
+    public void setIdInvoice(int idInvoice) { this.idInvoice.set(idInvoice); }
 
-    public String getProduct_name() { return product_name; }
-    public void setProduct_name(String product_name) { this.product_name = product_name; }
+    public int getProductCode() { return productCode.get(); }
+    public IntegerProperty productCodeProperty() { return productCode; }
+    public void setProductCode(int productCode) { this.productCode.set(productCode); }
 
-    public int getSold_product_count() { return sold_product_count; }
-    public void setSold_product_count(int sold_product_count) { this.sold_product_count = sold_product_count; }
+    public String getProductName() { return productName.get(); }
+    public StringProperty productNameProperty() { return productName; }
+    public void setProductName(String productName) { this.productName.set(productName); }
 
-    public double getPrice_without_nds() { return price_without_nds; }
-    public void setPrice_without_nds(double price_without_nds) { this.price_without_nds = price_without_nds; }
+    public int getSoldProductCount() { return soldProductCount.get(); }
+    public IntegerProperty soldProductCountProperty() { return soldProductCount; }
+    public void setSoldProductCount(int count) { this.soldProductCount.set(count); }
 
-    public double getNds_summ() { return nds_summ; }
-    public void setNds_summ(double nds_summ) { this.nds_summ = nds_summ; }
+    public double getPriceWithoutNds() { return priceWithoutNds.get(); }
+    public DoubleProperty priceWithoutNdsProperty() { return priceWithoutNds; }
+    public void setPriceWithoutNds(double price) { this.priceWithoutNds.set(price); }
+
+    public double getNdsSumm() { return ndsSumm.get(); }
+    public DoubleProperty ndsSummProperty() { return ndsSumm; }
+    public void setNdsSumm(double nds) { this.ndsSumm.set(nds); }
 }

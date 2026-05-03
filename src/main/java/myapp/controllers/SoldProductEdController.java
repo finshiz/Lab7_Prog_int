@@ -2,17 +2,15 @@ package myapp.controllers;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import myapp.DBManager;
 import myapp.data.Product;
 import myapp.data.SoldItem;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.ResourceBundle;
 
-public class SoldProductEdController implements Initializable {
+import java.util.ArrayList;
+
+public class SoldProductEdController {
     @FXML private ComboBox<Product> productCombo;
     @FXML private TextField codeField;
     @FXML private TextField countField;
@@ -23,32 +21,20 @@ public class SoldProductEdController implements Initializable {
     private DBManager manager;
     private SoldItem item;
     private boolean isOk = false;
-    private boolean isNew = true;
-    private int oldProductKey;
+    private int invoiceId;
 
-    @Override public void initialize(URL url, ResourceBundle rb) {}
+    @FXML public void initialize() {}
 
-    public void initialize(Stage dialogStage, DBManager manager, SoldItem item, boolean isNew) {
+    public void initialize(Stage dialogStage, DBManager manager, SoldItem item, int invoiceId) {
         this.dialogStage = dialogStage;
         this.manager = manager;
         this.item = item;
-        this.isNew = isNew;
+        this.invoiceId = invoiceId;
 
         ArrayList<Product> products = new ArrayList<>(manager.getProducts());
         productCombo.setItems(FXCollections.observableArrayList(products));
 
-        productCombo.setCellFactory(lv -> new ListCell<Product>() {
-            @Override protected void updateItem(Product p, boolean empty) {
-                super.updateItem(p, empty);
-                setText(p == null ? null : p.getProduct_name());
-            }
-        });
-        productCombo.setButtonCell(new ListCell<Product>() {
-            @Override protected void updateItem(Product p, boolean empty) {
-                super.updateItem(p, empty);
-                setText(p == null ? null : p.getProduct_name());
-            }
-        });
+        setupComboBox(productCombo, Product::getProductName);
 
         productCombo.setOnAction(e -> {
             Product p = productCombo.getValue();
@@ -60,19 +46,34 @@ public class SoldProductEdController implements Initializable {
         });
         countField.textProperty().addListener((obs, oldV, newV) -> calcNds());
 
-        if (!isNew && item.getId_product() != 0) {
-            oldProductKey = item.getId_product();
-            codeField.setText(String.valueOf(item.getProduct_code()));
-            countField.setText(String.valueOf(item.getSold_product_count()));
-            priceField.setText(String.valueOf(item.getPrice_without_nds()));
-            ndsField.setText(String.valueOf(item.getNds_summ()));
+        // Если редактируем существующий элемент
+        if (item.getIdProduct() != 0) {
+            codeField.setText(String.valueOf(item.getProductCode()));
+            countField.setText(String.valueOf(item.getSoldProductCount()));
+            priceField.setText(String.valueOf(item.getPriceWithoutNds()));
+            ndsField.setText(String.valueOf(item.getNdsSumm()));
             for(Product p : products) {
-                if(p.getProduct_code() == item.getProduct_code()) {
+                if(p.getProduct_code() == item.getProductCode()) {
                     productCombo.setValue(p);
                     break;
                 }
             }
         }
+    }
+
+    private <T> void setupComboBox(ComboBox<T> combo, java.util.function.Function<T, String> textFunc) {
+        combo.setCellFactory(lv -> new ListCell<T>() {
+            @Override protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : textFunc.apply(item));
+            }
+        });
+        combo.setButtonCell(new ListCell<T>() {
+            @Override protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : textFunc.apply(item));
+            }
+        });
     }
 
     private void calcNds() {
@@ -83,6 +84,7 @@ public class SoldProductEdController implements Initializable {
             ndsField.setText(String.format("%.2f", nds));
         } catch (Exception e) {}
     }
+
     @FXML private void handleOk() {
         if (productCombo.getValue() == null || countField.getText().isEmpty()) {
             myapp.gui.Dialogs.showDialog("Ошибка", "Выберите товар и укажите количество",
@@ -93,24 +95,27 @@ public class SoldProductEdController implements Initializable {
         try {
             Product p = productCombo.getValue();
 
-            item.setProduct_code(p.getProduct_code());
-            item.setProduct_name(p.getProduct_name());
-            item.setSold_product_count(Integer.parseInt(countField.getText()));
-            item.setPrice_without_nds(p.getPrice_per_unit_without_NDS());
-            item.setNds_summ(Double.parseDouble(ndsField.getText()));
+            item.setProductCode(p.getProduct_code());
+            item.setProductName(p.getProductName());
+            item.setSoldProductCount(Integer.parseInt(countField.getText()));
+            item.setPriceWithoutNds(p.getPrice_per_unit_without_NDS());
+            item.setNdsSumm(Double.parseDouble(ndsField.getText()));
+            item.setIdInvoice(invoiceId);
 
-            if (item.getId_invoice() == 0) {
+            if (invoiceId == 0) {
                 myapp.gui.Dialogs.showDialog("Ошибка", "ID накладной не установлен! Невозможно добавить товар.", Alert.AlertType.ERROR, dialogStage);
                 return;
             }
 
             boolean success = false;
-            if (isNew) {
+            if (item.getIdProduct() == 0) {
+                // Новый элемент - добавляем в БД
                 success = manager.addSoldItem(item);
             } else {
-                success = manager.updateSoldItem(item, oldProductKey);
+                // Существующий элемент - обновляем в БД
+                success = manager.updateSoldItem(item, item.getIdProduct());
             }
-            
+
             if (success) {
                 isOk = true;
                 dialogStage.close();
