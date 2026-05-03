@@ -407,9 +407,7 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
             "WHERE sp.id_invoice = ?";
     try (java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
         pst.setInt(1, invoiceId);
-        System.out.println(">>> DBManager: Vipolnyayetsa SELECT dlya invoiceId=" + invoiceId);
         java.sql.ResultSet rs = pst.executeQuery();
-        int count = 0;
         while (rs.next()) {
             SoldItem item = new SoldItem();
             item.setId_product(rs.getInt("id_product"));
@@ -420,31 +418,24 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
             item.setPrice_without_nds(rs.getDouble("price_without_nds"));
             item.setNds_summ(rs.getDouble("nds_summ"));
             list.add(item);
-            count++;
         }
-        System.out.println(">>> DBManager: SELECT vernul strok: " + count);
     } catch (Exception e) {
-        System.err.println(">>> DBManager ERROR loadSoldItems: " + e.getMessage());
-        e.printStackTrace();
+        myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось загрузить товары накладной: " + e.getMessage(),
+                javafx.scene.control.Alert.AlertType.ERROR);
     }
     return list;
 }
     // Добавление товара в накладную (Суррогатный ключ через RETURNING)
     public boolean addSoldItem(SoldItem item) {
         if (con == null) {
-            System.err.println(">>> [DB] Oshibka: Soedineniya s BD net!");
             return false;
         }
 
         String sql = "INSERT INTO taxes.sold_product (id_invoice, product_code, sold_product_count, price_without_nds, nds_summ) " +
                 "VALUES (?, ?, ?, ?, ?) RETURNING id_product";
         try (java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
-            System.out.println(">>> [DB] INSERT: invoice=" + item.getId_invoice() +
-                    ", prod=" + item.getProduct_code() +
-                    ", count=" + item.getSold_product_count());
-
             if (item.getId_invoice() == 0) {
-                throw new Exception("id_invoice raven 0!");
+                throw new Exception("ID накладной не установлен");
             }
 
             pst.setInt(1, item.getId_invoice());
@@ -456,31 +447,16 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
             try (java.sql.ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
                     item.setId_product(rs.getInt(1));
-                    System.out.println(">>> [DB] Sgenerirovan id_product: " + item.getId_product());
                 }
             } catch (SQLException e) {
-                System.err.println(">>> [DB] Оshibka pri poluchenii sgenerirovannogo klyucha: " + e.getMessage());
-                e.printStackTrace();
                 RollBack();
                 return false;
             }
             con.commit();
-            System.out.println(">>> [DB] COMMIT vipolnen dlya sold item");
-
-            // Проверка
-            try (java.sql.Statement st = con.createStatement();
-                 java.sql.ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM taxes.sold_product WHERE id_invoice=" + item.getId_invoice())) {
-                if (rs.next()) {
-                    System.out.println(">>> [DB] Proverka: v tablitse " + rs.getInt(1) + " strok dlya invoice=" + item.getId_invoice());
-                }
-            }
-
             return true;
         } catch (Exception e) {
             RollBack();
-            System.err.println(">>> [DB] OSHIBKA: " + e.getMessage());
-            e.printStackTrace();
-            myapp.gui.Dialogs.showDialog("Oshibka", e.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            myapp.gui.Dialogs.showDialog("Ошибка", e.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         }
     }
@@ -527,9 +503,13 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
             while (rs.next()) {
                 list.add(new Buyer(rs.getInt("id_buyer"), rs.getString("organization_name")));
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось загрузить покупателей: " + e.getMessage(),
+                    javafx.scene.control.Alert.AlertType.ERROR);
+        }
         return list;
     }
+
     public void refreshInvoice(SalesInvoice inv) {
         if (inv == null || inv.getId_invoice() == 0) return;
         String sql = "SELECT selling_price FROM taxes.sales_book WHERE id_invoice = ?";
@@ -540,9 +520,9 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
                 inv.setSelling_price(rs.getDouble("selling_price"));
             }
         } catch (Exception e) {
-            System.err.println(">>> DBManager ERROR refreshInvoice: " + e.getMessage());
-            e.printStackTrace();
+            myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось обновить сумму накладной: " + e.getMessage(),
+                    javafx.scene.control.Alert.AlertType.ERROR);
         }
     }
-
 }
+

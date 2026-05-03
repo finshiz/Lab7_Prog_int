@@ -105,42 +105,28 @@ public class SoldProductEdController implements Initializable {
             item.setNds_summ(Double.parseDouble(ndsField.getText()));
 
             // 3. КРИТИЧЕСКАЯ ПРОВЕРКА ID НАКЛАДНОЙ
-            System.out.println(">>> [SoldProductEd] SOHRANENIE TOWARA:");
-            System.out.println("    - Item ID_Product (skey): " + item.getId_product());
-            System.out.println("    - Item ID_Invoice (FK): " + item.getId_invoice());
-
             if (item.getId_invoice() == 0) {
-                myapp.gui.Dialogs.showDialog("Ошибка", "ID nakladnoy ne ustanovlen! " +
-                        "Nevозmozhno dobavit' tovar.", Alert.AlertType.ERROR, dialogStage);
-                System.out.println("    - ERROR: ID_Invoice = 0, aborting save.");
+                myapp.gui.Dialogs.showDialog("Ошибка", "ID накладной не установлен! " +
+                        "Невозможно добавить товар.", Alert.AlertType.ERROR, dialogStage);
                 return;
             }
 
             // 4. Вызов менеджера
             if (isNew) {
-                System.out.println("    - Vyzov manager.addSoldItem...");
                 if (manager.addSoldItem(item)) {
                     isOk = true;
-                    System.out.println("    - SUCCESS: Tovar dobavlen.");
-                } else {
-                    System.out.println("    - FAIL: manager.addSoldItem vernul false.");
                 }
             } else {
-                System.out.println("    - Vyzov manager.updateSoldItem...");
                 if (manager.updateSoldItem(item, oldKey)) {
                     isOk = true;
-                    System.out.println("    - SUCCESS: Tovar obnovlen.");
-                } else {
-                    System.out.println("    - FAIL: manager.updateSoldItem vernul false.");
                 }
             }
 
         } catch (NumberFormatException e) {
-            myapp.gui.Dialogs.showDialog("Ошибка", "Neverny format chisla", Alert.AlertType.ERROR);
-            System.err.println(">>> [SoldProductEd] NumberFormatException: " + e.getMessage());
+            myapp.gui.Dialogs.showDialog("Ошибка", "Неверный формат числа", Alert.AlertType.ERROR, dialogStage);
         } catch (Exception e) {
             e.printStackTrace();
-            myapp.gui.Dialogs.showDialog("Ошибка", "Neizvestnaya oshibka: " + e.getMessage(), Alert.AlertType.ERROR);
+            myapp.gui.Dialogs.showDialog("Ошибка", "Неизвестная ошибка: " + e.getMessage(), Alert.AlertType.ERROR, dialogStage);
         }
 
         // 5. Закрытие окна при успехе

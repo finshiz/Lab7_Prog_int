@@ -169,9 +169,8 @@ public class SalesBookEdController {
         SoldItem newItem = new SoldItem();
         newItem.setId_invoice(invoice.getId_invoice()); // Привязываем к текущей накладной
         if (showDetailDialog(newItem)) {
-            detailData.add(newItem);
-            // Обновляем сумму накладной (если триггер не делает это мгновенно, нужно перечитать)
-            // Для простоты перечитаем товары и обновим поле суммы
+            // Перезагружаем данные из БД после добавления
+            detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
             updateTotalPrice();
         }
     }
@@ -179,8 +178,19 @@ public class SalesBookEdController {
     @FXML private void handleEditDetail() {
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
         if (sel != null) {
-            if (showDetailDialog(sel)) {
-                detailTable.refresh();
+            // Создаем копию для редактирования
+            SoldItem itemToEdit = new SoldItem(
+                sel.getId_product(),
+                sel.getId_invoice(),
+                sel.getProduct_code(),
+                sel.getProduct_name(),
+                sel.getSold_product_count(),
+                sel.getPrice_without_nds(),
+                sel.getNds_summ()
+            );
+            if (showDetailDialog(itemToEdit)) {
+                // Перезагружаем данные из БД после редактирования
+                detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
                 updateTotalPrice();
             }
         }
@@ -191,7 +201,8 @@ public class SalesBookEdController {
         if (idx >= 0 && myapp.gui.Dialogs.showConfirmDialog("Удалить товар?", dialogStage)) {
             SoldItem item = detailData.get(idx);
             if (manager.deleteSoldItem(item.getId_product())) {
-                detailData.remove(idx);
+                // Перезагружаем данные из БД после удаления
+                detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
                 updateTotalPrice();
             }
         }
