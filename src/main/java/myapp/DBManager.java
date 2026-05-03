@@ -48,21 +48,15 @@ public class DBManager {
         List<Buyer> buyers = new ArrayList<>();
         String query = "SELECT id_buyer, organization_name FROM taxes.buyers ORDER BY id_buyer";
 
-        try {
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-
+        try (Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
                 buyers.add(new Buyer(
                         rs.getInt("id_buyer"),
                         rs.getString("organization_name")
                 ));
             }
-
-            rs.close();
-            stmt.close();
         } catch (SQLException e) {
-            System.err.println("Ошибка при загрузке покупателей: " + e.getMessage());
             e.printStackTrace();
         }
 
