@@ -4,40 +4,65 @@
 *.o
 *.obj
 *.out
-build/
-target/
+*.dll
+*.so
+*.a
+*.exe
 
 # Dependencies
+target/
+.m2/
 .gradle/
-.mypy_cache/
-.pytest_cache/
-__pycache__/
-node_modules/
-venv/
-.venv/
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
 
+# Editors
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
 # Environment
 .env
 .env.local
 *.env.*
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
 
 # Coverage reports
 coverage/
 htmlcov/
 .coverage
 
-# OS generated files
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+.MF
+tags
+TAGS
+*.tmproj
+*.sw*
 .DS_Store
 Thumbs.db
 ```
