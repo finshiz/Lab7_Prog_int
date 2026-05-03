@@ -397,38 +397,40 @@ public class DBManager {
         }
     }
 
-// ========== ПОДЧИНЕННАЯ ТАБЛИЦА: sold_product ==========
-// Загрузка товаров для накладной
-public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
-    java.util.List<SoldItem> list = new java.util.ArrayList<>();
-    String sql = "SELECT sp.id_product, sp.id_invoice, sp.product_code, p.product_name, " +
-            "sp.sold_product_count, sp.price_without_nds, sp.nds_summ " +
-            "FROM taxes.sold_product sp LEFT JOIN taxes.product p ON sp.product_code = p.product_code " +
-            "WHERE sp.id_invoice = ?";
-    try (java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
-        pst.setInt(1, invoiceId);
-        java.sql.ResultSet rs = pst.executeQuery();
-        while (rs.next()) {
-            SoldItem item = new SoldItem();
-            item.setId_product(rs.getInt("id_product"));
-            item.setId_invoice(rs.getInt("id_invoice"));
-            item.setProduct_code(rs.getInt("product_code"));
-            item.setProduct_name(rs.getString("product_name"));
-            item.setSold_product_count(rs.getInt("sold_product_count"));
-            item.setPrice_without_nds(rs.getDouble("price_without_nds"));
-            item.setNds_summ(rs.getDouble("nds_summ"));
-            list.add(item);
+    // ========== ПОДЧИНЕННАЯ ТАБЛИЦА: sold_product ==========
+    
+    // Загрузка товаров для накладной
+    public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
+        java.util.List<SoldItem> list = new java.util.ArrayList<>();
+        String sql = "SELECT sp.id_product, sp.id_invoice, sp.product_code, p.product_name, " +
+                "sp.sold_product_count, sp.price_without_nds, sp.nds_summ " +
+                "FROM taxes.sold_product sp LEFT JOIN taxes.product p ON sp.product_code = p.product_code " +
+                "WHERE sp.id_invoice = ?";
+        try (java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setInt(1, invoiceId);
+            java.sql.ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                SoldItem item = new SoldItem();
+                item.setId_product(rs.getInt("id_product"));
+                item.setId_invoice(rs.getInt("id_invoice"));
+                item.setProduct_code(rs.getInt("product_code"));
+                item.setProduct_name(rs.getString("product_name"));
+                item.setSold_product_count(rs.getInt("sold_product_count"));
+                item.setPrice_without_nds(rs.getDouble("price_without_nds"));
+                item.setNds_summ(rs.getDouble("nds_summ"));
+                list.add(item);
+            }
+        } catch (Exception e) {
+            myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось загрузить товары накладной: " + e.getMessage(),
+                    javafx.scene.control.Alert.AlertType.ERROR);
         }
-    } catch (Exception e) {
-        myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось загрузить товары накладной: " + e.getMessage(),
-                javafx.scene.control.Alert.AlertType.ERROR);
+        return list;
     }
-    return list;
-}
+
     // Добавление товара в накладную (Суррогатный ключ через RETURNING)
     public boolean addSoldItem(SoldItem item) {
         if (con == null) {
-            myapp.gui.Dialogs.showDialog("Ошибка", "Нет соединения с базой данных", 
+            myapp.gui.Dialogs.showDialog("Ошибка", "Нет соединения с базой данных",
                     javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         }
@@ -455,7 +457,7 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
             return true;
         } catch (Exception e) {
             RollBack();
-            myapp.gui.Dialogs.showDialog("Ошибка добавления товара", e.getMessage(), 
+            myapp.gui.Dialogs.showDialog("Ошибка добавления товара", e.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         }
@@ -475,7 +477,7 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
             return true;
         } catch (Exception e) {
             RollBack();
-            myapp.gui.Dialogs.showDialog("Ошибка обновления товара", e.getMessage(), 
+            myapp.gui.Dialogs.showDialog("Ошибка обновления товара", e.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         }
@@ -491,7 +493,7 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
             return true;
         } catch (Exception e) {
             RollBack();
-            myapp.gui.Dialogs.showDialog("Ошибка удаления товара", e.getMessage(), 
+            myapp.gui.Dialogs.showDialog("Ошибка удаления товара", e.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         }
@@ -527,4 +529,3 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
         }
     }
 }
-
