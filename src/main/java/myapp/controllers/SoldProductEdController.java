@@ -22,15 +22,17 @@ public class SoldProductEdController implements Initializable {
     private Stage dialogStage;
     private DBManager manager;
     private SoldItem item;
-    private boolean isOk = false, isNew = true;
-    private int oldProductKey; // Переименовано для ясности
+    private boolean isOk = false;
+    private boolean isNew = true;
+    private int oldProductKey;
 
     @Override public void initialize(URL url, ResourceBundle rb) {}
 
-    public void initialize(Stage dialogStage, DBManager manager, SoldItem item) {
+    public void initialize(Stage dialogStage, DBManager manager, SoldItem item, boolean isNew) {
         this.dialogStage = dialogStage;
         this.manager = manager;
         this.item = item;
+        this.isNew = isNew;
 
         ArrayList<Product> products = new ArrayList<>(manager.getProducts());
         productCombo.setItems(FXCollections.observableArrayList(products));
@@ -58,8 +60,7 @@ public class SoldProductEdController implements Initializable {
         });
         countField.textProperty().addListener((obs, oldV, newV) -> calcNds());
 
-        if (item.getId_product() != 0) {
-            isNew = false;
+        if (!isNew && item.getId_product() != 0) {
             oldProductKey = item.getId_product();
             codeField.setText(String.valueOf(item.getProduct_code()));
             countField.setText(String.valueOf(item.getSold_product_count()));
