@@ -428,6 +428,8 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
     // Добавление товара в накладную (Суррогатный ключ через RETURNING)
     public boolean addSoldItem(SoldItem item) {
         if (con == null) {
+            myapp.gui.Dialogs.showDialog("Ошибка", "Нет соединения с базой данных", 
+                    javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         }
 
@@ -448,15 +450,13 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
                 if (rs.next()) {
                     item.setId_product(rs.getInt(1));
                 }
-            } catch (SQLException e) {
-                RollBack();
-                return false;
             }
             con.commit();
             return true;
         } catch (Exception e) {
             RollBack();
-            myapp.gui.Dialogs.showDialog("Ошибка", e.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            myapp.gui.Dialogs.showDialog("Ошибка добавления товара", e.getMessage(), 
+                    javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         }
     }
@@ -475,7 +475,8 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
             return true;
         } catch (Exception e) {
             RollBack();
-            myapp.gui.Dialogs.showDialog("Ошибка", e.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            myapp.gui.Dialogs.showDialog("Ошибка обновления товара", e.getMessage(), 
+                    javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         }
     }
@@ -490,7 +491,8 @@ public java.util.List<SoldItem> loadSoldItems(int invoiceId) {
             return true;
         } catch (Exception e) {
             RollBack();
-            myapp.gui.Dialogs.showDialog("Ошибка", e.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            myapp.gui.Dialogs.showDialog("Ошибка удаления товара", e.getMessage(), 
+                    javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         }
     }

@@ -115,6 +115,7 @@ public class SalesBookEdController {
             btnNewDetail.setDisable(true);
             btnEditDetail.setDisable(true);
             btnDeleteDetail.setDisable(true);
+            detailTable.setDisable(true);
         } else {
             btnOk.setText("Редактировать накладную");
             btnCancel.setText("Выход");
@@ -125,6 +126,7 @@ public class SalesBookEdController {
             btnNewDetail.setDisable(false);
             btnEditDetail.setDisable(false);
             btnDeleteDetail.setDisable(false);
+            detailTable.setDisable(false);
         }
     }
 
@@ -143,6 +145,8 @@ public class SalesBookEdController {
                 if (manager.addInvoice(invoice)) {
                     isNew = false;
                     oldKey = invoice.getId_invoice();
+                    // После создания накладной загружаем пустой список товаров
+                    detailData.clear();
                     setEditMode(false); // Переходим в режим редактирования товаров
                 }
             } else {
@@ -166,6 +170,11 @@ public class SalesBookEdController {
 
     // --- ОПЕРАЦИИ С ПОДЧИНЕННОЙ ТАБЛИЦЕЙ ---
     @FXML private void handleNewDetail() {
+        if (invoice.getId_invoice() == 0) {
+            myapp.gui.Dialogs.showDialog("Ошибка", "Накладная еще не сохранена. Сначала сохраните накладную.",
+                    javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
+            return;
+        }
         SoldItem newItem = new SoldItem();
         newItem.setId_invoice(invoice.getId_invoice()); // Привязываем к текущей накладной
         if (showDetailDialog(newItem)) {
@@ -193,18 +202,23 @@ public class SalesBookEdController {
                 detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
                 updateTotalPrice();
             }
+        } else {
+            myapp.gui.Dialogs.showDialog("Внимание", "Выберите товар для редактирования",
+                    javafx.scene.control.Alert.AlertType.WARNING, dialogStage);
         }
     }
 
     @FXML private void handleDeleteDetail() {
-        int idx = detailTable.getSelectionModel().getSelectedIndex();
-        if (idx >= 0 && myapp.gui.Dialogs.showConfirmDialog("Удалить товар?", dialogStage)) {
-            SoldItem item = detailData.get(idx);
-            if (manager.deleteSoldItem(item.getId_product())) {
+        SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
+        if (sel != null && myapp.gui.Dialogs.showConfirmDialog("Удалить товар?", dialogStage)) {
+            if (manager.deleteSoldItem(sel.getId_product())) {
                 // Перезагружаем данные из БД после удаления
                 detailData.setAll(manager.loadSoldItems(invoice.getId_invoice()));
                 updateTotalPrice();
             }
+        } else if (sel == null) {
+            myapp.gui.Dialogs.showDialog("Внимание", "Выберите товар для удаления",
+                    javafx.scene.control.Alert.AlertType.WARNING, dialogStage);
         }
     }
 
@@ -236,7 +250,8 @@ public class SalesBookEdController {
             editStage.showAndWait();
             return ctrl.isOkClicked();
         } catch (Exception e) {
-            e.printStackTrace();
+            myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось открыть диалог товара: " + e.getMessage(),
+                    javafx.scene.control.Alert.AlertType.ERROR, dialogStage);
             return false;
         }
     }

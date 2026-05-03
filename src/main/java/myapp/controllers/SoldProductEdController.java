@@ -125,7 +125,6 @@ public class SoldProductEdController implements Initializable {
         } catch (NumberFormatException e) {
             myapp.gui.Dialogs.showDialog("Ошибка", "Неверный формат числа", Alert.AlertType.ERROR, dialogStage);
         } catch (Exception e) {
-            e.printStackTrace();
             myapp.gui.Dialogs.showDialog("Ошибка", "Неизвестная ошибка: " + e.getMessage(), Alert.AlertType.ERROR, dialogStage);
         }
 

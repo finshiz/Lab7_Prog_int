@@ -8,10 +8,13 @@ build/
 target/
 
 # Dependencies
-lib/
-*.jar
-*.war
-*.ear
+.gradle/
+.mypy_cache/
+.pytest_cache/
+__pycache__/
+node_modules/
+venv/
+.venv/
 
 # Logs and temp files
 *.log
@@ -26,14 +29,13 @@ lib/
 # Editors
 .vscode/
 .idea/
-*.iml
-*.ipr
-*.iws
 
-# OS generated files
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# System
 .DS_Store
 Thumbs.db
-
-# Maven
-.mvn/
 ```
