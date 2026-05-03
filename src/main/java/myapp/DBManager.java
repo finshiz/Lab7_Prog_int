@@ -48,45 +48,37 @@ public class DBManager {
         List<Buyer> buyers = new ArrayList<>();
         String query = "SELECT id_buyer, organization_name FROM taxes.buyers ORDER BY id_buyer";
 
-        try {
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-
+        try (Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
                 buyers.add(new Buyer(
                         rs.getInt("id_buyer"),
                         rs.getString("organization_name")
                 ));
             }
-
-            rs.close();
-            stmt.close();
         } catch (SQLException e) {
-            System.err.println("Ошибка при загрузке покупателей: " + e.getMessage());
-            e.printStackTrace();
+            myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось загрузить покупателей: " + e.getMessage(),
+                    javafx.scene.control.Alert.AlertType.ERROR);
         }
 
         return buyers;
     }
 
-    // Добавление нового покупателя
-// Обновленный метод добавления покупателя (с ID)
+    // Добавление нового покупателя (с использованием sequence)
     public boolean addBuyer(Buyer buyer) {
         PreparedStatement pst = null;
         Connection con = this.getConnection();
-        // Вставляем и ID, и Наименование
-        String stm = "INSERT INTO taxes.buyers (id_buyer, organization_name) VALUES (?, ?)";
+        String stm = "INSERT INTO taxes.buyers (organization_name) VALUES (?)";
 
         try {
             pst = con.prepareStatement(stm);
-            pst.setInt(1, buyer.getId_buyer()); // Теперь вставляем ID
-            pst.setString(2, buyer.getOrganization_name());
+            pst.setString(1, buyer.getOrganization_name());
             pst.executeUpdate();
             con.commit();
             return true;
         } catch (SQLException ex) {
             RollBack();
-            myapp.gui.Dialogs.showDialog("Oshibka dobavleniya dannih",
+            myapp.gui.Dialogs.showDialog("Ошибка добавления данных",
                     ex.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR);
             return false;
@@ -110,17 +102,12 @@ public class DBManager {
             return true;
         } catch (SQLException ex) {
             RollBack();
-            myapp.gui.Dialogs.showDialog("Oshibka izmeneniya dannih",
+            myapp.gui.Dialogs.showDialog("Ошибка изменения данных",
                     ex.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR);
             return false;
         } finally {
-            try {
-                if (pst != null) pst.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
-            }
+            try { if (pst != null) pst.close(); } catch (SQLException e) { return false; }
         }
     }
 
@@ -137,18 +124,13 @@ public class DBManager {
             con.commit();
             return true;
         } catch (SQLException ex) {
-            myapp.gui.Dialogs.showDialog("Oshibka udaleniya dannih",
+            myapp.gui.Dialogs.showDialog("Ошибка удаления данных",
                     ex.getMessage(),
                     javafx.scene.control.Alert.AlertType.ERROR);
             RollBack();
             return false;
         } finally {
-            try {
-                if (pst != null) pst.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
-            }
+            try { if (pst != null) pst.close(); } catch (SQLException e) { return false; }
         }
     }
 
@@ -158,10 +140,8 @@ public class DBManager {
         List<ProductGroup> groups = new ArrayList<>();
         String query = "SELECT group_code, group_name, NDS_percent FROM taxes.product_group ORDER BY group_code";
 
-        try {
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-
+        try (Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
                 groups.add(new ProductGroup(
                         rs.getInt("group_code"),
@@ -169,12 +149,9 @@ public class DBManager {
                         rs.getDouble("NDS_percent")
                 ));
             }
-
-            rs.close();
-            stmt.close();
         } catch (SQLException e) {
-            System.err.println("Ошибка при загрузке групп товаров: " + e.getMessage());
-            e.printStackTrace();
+            myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось загрузить группы товаров: " + e.getMessage(),
+                    javafx.scene.control.Alert.AlertType.ERROR);
         }
 
         return groups;
@@ -186,10 +163,8 @@ public class DBManager {
         List<Product> products = new ArrayList<>();
         String query = "SELECT product_code, product_name, price_per_unit_without_NDS, group_code FROM taxes.product ORDER BY product_code";
 
-        try {
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-
+        try (Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
                 products.add(new Product(
                         rs.getInt("product_code"),
@@ -198,12 +173,9 @@ public class DBManager {
                         rs.getInt("group_code")
                 ));
             }
-
-            rs.close();
-            stmt.close();
         } catch (SQLException e) {
-            System.err.println("Ошибка при загрузке товаров: " + e.getMessage());
-            e.printStackTrace();
+            myapp.gui.Dialogs.showDialog("Ошибка", "Не удалось загрузить товары: " + e.getMessage(),
+                    javafx.scene.control.Alert.AlertType.ERROR);
         }
 
         return products;
@@ -212,12 +184,12 @@ public class DBManager {
     // Метод отката транзакции
     private void RollBack() {
         try {
-            if (con != null)
-                con.rollback();
+            if (con != null) con.rollback();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
     // --- Группы товаров ---
     public boolean addGroup(ProductGroup group) {
         PreparedStatement pst = null;
@@ -228,24 +200,37 @@ public class DBManager {
             pst.setInt(1, group.getGroup_code());
             pst.setString(2, group.getGroup_name());
             pst.setDouble(3, group.getNDS_percent());
-            pst.executeUpdate(); con.commit(); return true;
-        } catch (SQLException ex) { RollBack(); myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR); return false; }
-        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){return false;} }
+            pst.executeUpdate();
+            con.commit();
+            return true;
+        } catch (SQLException ex) {
+            RollBack();
+            myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            return false;
+        } finally {
+            try { if (pst != null) pst.close(); } catch (SQLException e) { return false; }
+        }
     }
 
     public boolean updateGroup(ProductGroup group, int key) {
         PreparedStatement pst = null;
         Connection con = this.getConnection();
-        String stm = "UPDATE taxes.product_group SET group_code=?, group_name=?, NDS_percent=? WHERE group_code=?";
+        String stm = "UPDATE taxes.product_group SET group_name=?, NDS_percent=? WHERE group_code=?";
         try {
             pst = con.prepareStatement(stm);
-            pst.setInt(1, group.getGroup_code());
-            pst.setString(2, group.getGroup_name());
-            pst.setDouble(3, group.getNDS_percent());
-            pst.setInt(4, key);
-            pst.executeUpdate(); con.commit(); return true;
-        } catch (SQLException ex) { RollBack(); myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR); return false; }
-        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){return false;} }
+            pst.setString(1, group.getGroup_name());
+            pst.setDouble(2, group.getNDS_percent());
+            pst.setInt(3, key);
+            pst.executeUpdate();
+            con.commit();
+            return true;
+        } catch (SQLException ex) {
+            RollBack();
+            myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            return false;
+        } finally {
+            try { if (pst != null) pst.close(); } catch (SQLException e) { return false; }
+        }
     }
 
     public boolean deleteGroup(int kod) {
@@ -253,9 +238,18 @@ public class DBManager {
         Connection con = this.getConnection();
         String stm = "DELETE FROM taxes.product_group WHERE group_code=?";
         try {
-            pst = con.prepareStatement(stm); pst.setInt(1, kod); pst.executeUpdate(); con.commit(); return true;
-        } catch (SQLException ex) { myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR); RollBack(); return false; }
-        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){return false;} }
+            pst = con.prepareStatement(stm);
+            pst.setInt(1, kod);
+            pst.executeUpdate();
+            con.commit();
+            return true;
+        } catch (SQLException ex) {
+            myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            RollBack();
+            return false;
+        } finally {
+            try { if (pst != null) pst.close(); } catch (SQLException e) { return false; }
+        }
     }
 
     // --- Товары ---
@@ -269,25 +263,38 @@ public class DBManager {
             pst.setString(2, prod.getProduct_name());
             pst.setDouble(3, prod.getPrice_per_unit_without_NDS());
             pst.setInt(4, prod.getGroup_code());
-            pst.executeUpdate(); con.commit(); return true;
-        } catch (SQLException ex) { RollBack(); myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR); return false; }
-        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){return false;} }
+            pst.executeUpdate();
+            con.commit();
+            return true;
+        } catch (SQLException ex) {
+            RollBack();
+            myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            return false;
+        } finally {
+            try { if (pst != null) pst.close(); } catch (SQLException e) { return false; }
+        }
     }
 
     public boolean updateProduct(Product prod, int key) {
         PreparedStatement pst = null;
         Connection con = this.getConnection();
-        String stm = "UPDATE taxes.product SET product_code=?, product_name=?, price_per_unit_without_NDS=?, group_code=? WHERE product_code=?";
+        String stm = "UPDATE taxes.product SET product_name=?, price_per_unit_without_NDS=?, group_code=? WHERE product_code=?";
         try {
             pst = con.prepareStatement(stm);
-            pst.setInt(1, prod.getProduct_code());
-            pst.setString(2, prod.getProduct_name());
-            pst.setDouble(3, prod.getPrice_per_unit_without_NDS());
-            pst.setInt(4, prod.getGroup_code());
-            pst.setInt(5, key);
-            pst.executeUpdate(); con.commit(); return true;
-        } catch (SQLException ex) { RollBack(); myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR); return false; }
-        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){return false;} }
+            pst.setString(1, prod.getProduct_name());
+            pst.setDouble(2, prod.getPrice_per_unit_without_NDS());
+            pst.setInt(3, prod.getGroup_code());
+            pst.setInt(4, key);
+            pst.executeUpdate();
+            con.commit();
+            return true;
+        } catch (SQLException ex) {
+            RollBack();
+            myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            return false;
+        } finally {
+            try { if (pst != null) pst.close(); } catch (SQLException e) { return false; }
+        }
     }
 
     public boolean deleteProduct(int kod) {
@@ -295,9 +302,18 @@ public class DBManager {
         Connection con = this.getConnection();
         String stm = "DELETE FROM taxes.product WHERE product_code=?";
         try {
-            pst = con.prepareStatement(stm); pst.setInt(1, kod); pst.executeUpdate(); con.commit(); return true;
-        } catch (SQLException ex) { myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR); RollBack(); return false; }
-        finally { try { if(pst!=null) pst.close(); } catch(SQLException e){return false;} }
+            pst = con.prepareStatement(stm);
+            pst.setInt(1, kod);
+            pst.executeUpdate();
+            con.commit();
+            return true;
+        } catch (SQLException ex) {
+            myapp.gui.Dialogs.showDialog("Ошибка", ex.getMessage(), javafx.scene.control.Alert.AlertType.ERROR);
+            RollBack();
+            return false;
+        } finally {
+            try { if (pst != null) pst.close(); } catch (SQLException e) { return false; }
+        }
     }
     // ========== ГЛАВНАЯ ТАБЛИЦА: sales_book ==========
 
