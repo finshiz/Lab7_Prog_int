@@ -169,7 +169,7 @@ public class SalesBookEdController {
         }
         SoldItem newItem = new SoldItem();
         newItem.setId_invoice(invoice.getId_invoice());
-        if (showDetailDialog(newItem)) {
+        if (showDetailDialog(newItem, true)) {
             detailData.add(newItem);
             updateTotalPrice();
         }
@@ -178,7 +178,7 @@ public class SalesBookEdController {
     @FXML private void handleEditDetail() {
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
         if (sel != null) {
-            if (showDetailDialog(sel)) {
+            if (showDetailDialog(sel, false)) {
                 detailTable.refresh();
                 updateTotalPrice();
             }
@@ -205,17 +205,17 @@ public class SalesBookEdController {
         totalField.setText(String.format("%.2f", total));
     }
 
-    private boolean showDetailDialog(SoldItem item) {
+    private boolean showDetailDialog(SoldItem item, boolean isNew) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SoldProductEd.fxml"));
             javafx.scene.layout.AnchorPane page = loader.load();
             Stage editStage = new Stage();
-            editStage.setTitle(item.getId_product() == 0 ? "Добавление товара" : "Редактирование товара");
+            editStage.setTitle(isNew ? "Добавление товара" : "Редактирование товара");
             editStage.initModality(Modality.WINDOW_MODAL);
             editStage.initOwner(dialogStage);
             editStage.setScene(new Scene(page));
             SoldProductEdController ctrl = loader.getController();
-            ctrl.initialize(editStage, manager, item);
+            ctrl.initialize(editStage, manager, item, isNew);
             editStage.showAndWait();
             return ctrl.isOkClicked();
         } catch (Exception e) {

@@ -30,7 +30,7 @@ venv/
 .vscode/
 .idea/
 
-# Coverage reports
+# Coverage
 coverage/
 htmlcov/
 .coverage
