@@ -176,9 +176,9 @@ public class SalesBookEdController {
     @FXML private void handleEditDetail() {
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
         if (sel != null) {
-            int oldKey = sel.getId_product();
+            int oldProductKey = sel.getId_product(); // Сохраняем старый ключ перед диалогом
             if (showDetailDialog(sel)) {
-                if (manager.updateSoldItem(sel, oldKey)) {
+                if (manager.updateSoldItem(sel, oldProductKey)) {
                     detailTable.refresh();
                     updateTotalPrice();
                 }
