@@ -166,17 +166,22 @@ public class SalesBookEdController {
         SoldItem newItem = new SoldItem();
         newItem.setId_invoice(invoice.getId_invoice());
         if (showDetailDialog(newItem)) {
-            detailData.add(newItem);
-            updateTotalPrice();
+            if (manager.addSoldItem(newItem)) {
+                detailData.add(newItem);
+                updateTotalPrice();
+            }
         }
     }
 
     @FXML private void handleEditDetail() {
         SoldItem sel = detailTable.getSelectionModel().getSelectedItem();
         if (sel != null) {
+            int oldKey = sel.getId_product();
             if (showDetailDialog(sel)) {
-                detailTable.refresh();
-                updateTotalPrice();
+                if (manager.updateSoldItem(sel, oldKey)) {
+                    detailTable.refresh();
+                    updateTotalPrice();
+                }
             }
         }
     }
